@@ -19,6 +19,21 @@ Android comme une vraie appli, et s'utilise aussi sur PC.
   référence reste visible sur la fiche pour comparer. Les crédits (auteur, licence) sont
   sur chaque fiche, dans Sauvegarde > À propos et dans `images/especes/CREDITS.md`.
 
+### Nouveautés de la version 1.2
+
+- **Mode sortie** (Mes obs. > Démarrer une sortie, ou appui long sur l'icône) : tu comptes
+  les oiseaux au fil de la balade, un toucher sur **+** = un individu. À la fin, chaque espèce
+  devient une observation, et un bilan s'affiche (nouvelles espèces, partage). Si l'appli se
+  ferme, la sortie reprend où tu en étais.
+- **Chants et cris** : dans le formulaire, enregistre au micro (3 min max) ou importe un
+  fichier son. Les sons sont inclus dans les sauvegardes .zip.
+- **Saison** (ligne du jour en haut du catalogue) : lever et coucher du soleil, heures dorée
+  et bleue, phase de la lune, arrivées et départs du mois, tes premières de l'année.
+- **Cibles** : sur la fiche d'une espèce, touche « Cible ». La page Saison te dit quand elle
+  est de saison, et l'appli te félicite quand tu l'observes enfin.
+- **Carte à partager** : sur la fiche d'une espèce observée, « Partager » crée une jolie image
+  (ta photo, les noms en 4 langues, le lieu, la date) pour WhatsApp, Instagram…
+
 Tes observations et tes photos restent **sur ton appareil** (base IndexedDB du navigateur).
 Rien n'est envoyé sur Internet.
 
@@ -148,6 +163,10 @@ Si Smokinya utilise un autre modèle de colonnes, la fonction `csv()` se trouve 
   galerie. Sur le terrain, le bouton **Ma position** est plus fiable, et il marche sans
   réseau.
 - **Liens « Voir la carte »** : ils ont besoin de réseau, car ils ouvrent OpenStreetMap.
+- **Micro** : la première fois que tu touches « Enregistrer », autorise le micro. Les filtres
+  « voix » du téléphone sont désactivés pour garder le chant fidèle.
+- **Soleil et lune** : calculés sans réseau pour ta dernière position GPS (sinon Karlovo),
+  à l'heure de Bulgarie.
 - **Espace** : la page Sauvegarde affiche la place utilisée. Installer l'appli sur l'écran
   d'accueil aide le navigateur à « protéger » les données.
 
@@ -173,6 +192,11 @@ js/utils.js            outils (recherche, dates, réglages, espèces)
 js/db.js               base de données IndexedDB
 js/photos.js           compression, EXIF, téléchargement, visionneuse
 js/zip.js              création et lecture des .zip (sans librairie)
+js/astro.js            soleil et lune (calculs hors connexion)
+js/sons.js             enregistrement et lecture des chants
+js/partage.js          carte « Nouvelle espèce » à partager
+js/saison.js           page Saison, cibles, ligne du jour
+js/sortie.js           mode sortie (comptage et bilan)
 js/catalogue.js        rubrique 1 : catalogue
 js/observations.js     rubrique 2 : formulaire et listes
 js/fiche.js            rubrique 3 : fiche espèce

@@ -18,7 +18,8 @@
   /* ---------- CSV (tableur) ---------- */
   function csv(obs) {
     const entetes = ['date', 'heure', 'espece_fr', 'nom_latin', 'nom_bulgare', 'nom_anglais', 'groupe', 'nombre',
-      'lieu', 'latitude', 'longitude', 'precision_m', 'comportement', 'meteo', 'temperature_c', 'notes', 'nb_photos', 'id_observation'];
+      'lieu', 'latitude', 'longitude', 'precision_m', 'comportement', 'meteo', 'temperature_c', 'notes', 'nb_photos', 'id_observation',
+      'nb_sons', 'id_sortie'];
     const q = function (v) {
       const s = v === null || v === undefined ? '' : String(v);
       return /[";\r\n]/.test(s) || s !== s.trim() ? '"' + s.replace(/"/g, '""') + '"' : s;
@@ -32,7 +33,8 @@
           o.lieu, o.lat, o.lon, o.precision,
           (o.comportements || []).map(function (k) { return App.libelle(App.COMPORTEMENTS, k); }).join(', '),
           (o.meteo || []).map(function (k) { return App.libelle(App.METEOS, k); }).join(', '),
-          o.temperature, o.notes, (o.photoIds || []).length, o.id
+          o.temperature, o.notes, (o.photoIds || []).length, o.id,
+          (o.sonIds || []).length, o.sortie ? o.sortie.id : ''
         ].map(q).join(';'));
       });
     return '﻿' + lignes.join('\r\n') + '\r\n'; // BOM : Excel lit l'UTF-8 (cyrillique) correctement
@@ -46,6 +48,7 @@
     '  observations.csv     le tableau des observations (Excel, LibreOffice)',
     '  photos/              tes photos originales (nom : espece_date_identifiant)',
     '  apercus/             copies allégées utilisées par l’appli',
+    '  sons/                tes enregistrements de chants et de cris',
     '',
     'Pour restaurer : ouvre l’appli > Sauvegarde > Importer, et choisis ce fichier.',
     'L’import fusionne les données : rien n’est écrasé, la version la plus récente',
@@ -74,10 +77,11 @@
     const suppressions = await App.db.tout('suppressions');
     const instant = new Date().toISOString();
     const depuis = type === 'nouveautes' ? App.prefs.get('derniereSauvegardeISO', null) : null;
-    let obs = c.obs, photos = c.photos, suppr = suppressions;
+    let obs = c.obs, photos = c.photos, sons = c.sons, suppr = suppressions;
     if (depuis) {
       obs = obs.filter(function (o) { return (o.modifieLe || '') > depuis; });
       photos = photos.filter(function (p) { return (p.modifieLe || p.creeLe || '') > depuis; });
+      sons = sons.filter(function (s) { return (s.modifieLe || s.creeLe || '') > depuis; });
       suppr = suppr.filter(function (s) { return (s.le || '') > depuis; });
     }
     const items = photos.map(function (p) {
@@ -90,15 +94,25 @@
       if (p.miniature) fichiers.push({ cle: 'miniature', nom: 'apercus/' + p.id + '_miniature.jpg', blob: p.miniature, crc: p.crc && p.crc.miniature });
       return { p: p, fichiers: fichiers, taille: tailleBlobs(p) };
     });
+    const itemsSons = sons.filter(function (s) { return s.blob; }).map(function (s) {
+      const e = App.esp.get(s.especeId);
+      const o = c.obsParId.get(s.observationId);
+      const nom = 'sons/' + u.slug(e.fr) + '_' + (o ? o.date : 'sans-date') + '_' + s.id.slice(-6) + '.' + App.sons.extension(s.type);
+      return { son: s, fichiers: [{ cle: 'blob', nom: nom, blob: s.blob }], taille: s.blob.size };
+    });
+    const tous = items.concat(itemsSons);
     const parties = [[]];
     let courant = 0;
-    items.forEach(function (it) {
+    tous.forEach(function (it) {
       if (courant + it.taille > LIMITE_PARTIE && parties[parties.length - 1].length) { parties.push([]); courant = 0; }
       parties[parties.length - 1].push(it);
       courant += it.taille;
     });
-    const total = items.reduce(function (s, it) { return s + it.taille; }, 0);
-    return { c: c, type: depuis ? 'nouveautes' : 'complet', depuis: depuis, instant: instant, obs: obs, suppr: suppr, parties: parties, taille: total, nbPhotos: items.length };
+    const total = tous.reduce(function (s, it) { return s + it.taille; }, 0);
+    return {
+      c: c, type: depuis ? 'nouveautes' : 'complet', depuis: depuis, instant: instant, obs: obs, suppr: suppr,
+      parties: parties, taille: total, nbPhotos: items.length, nbSons: itemsSons.length
+    };
   }
 
   async function creerPartie(prep, index, surProgression) {
@@ -108,12 +122,19 @@
       exporteLe: prep.instant, type: prep.type, depuis: prep.depuis,
       partie: index + 1, parties: prep.parties.length,
       observations: prep.obs,
-      photos: items.map(function (it) {
+      photos: items.filter(function (it) { return it.p; }).map(function (it) {
         const m = sansBlobs(it.p);
         m.fichiers = {};
         it.fichiers.forEach(function (f) { m.fichiers[f.cle] = f.nom; });
         return m;
       }),
+      sons: items.filter(function (it) { return it.son; }).map(function (it) {
+        const m = Object.assign({}, it.son);
+        delete m.blob;
+        m.fichier = it.fichiers[0].nom;
+        return m;
+      }),
+      cibles: App.cibles.liste(),
       suppressions: prep.suppr
     };
     const entrees = [{ nom: 'carnet-oiseaux.json', donnees: JSON.stringify(donnees) }];
@@ -146,6 +167,7 @@
     const locObs = new Map((await App.db.tout('observations')).map(function (o) { return [o.id, o]; }));
     const locPh = new Map((await App.db.tout('photos')).map(function (p) { return [p.id, p]; }));
     const locSup = new Map((await App.db.tout('suppressions')).map(function (s) { return [s.id, s]; }));
+    const locSons = new Map((await App.db.tout('sons')).map(function (s) { return [s.id, s]; }));
     const ops = [];
 
     (d.suppressions || []).forEach(function (s) {
@@ -157,6 +179,9 @@
       } else if (s.type === 'photo') {
         const p = locPh.get(s.id);
         if (p && (p.modifieLe || p.creeLe || '') <= s.le) { ops.push({ magasin: 'photos', effacer: s.id }); locPh.delete(s.id); App.photos.oublierUrl(s.id); }
+      } else if (s.type === 'son') {
+        const x = locSons.get(s.id);
+        if (x && (x.modifieLe || x.creeLe || '') <= s.le) { ops.push({ magasin: 'sons', effacer: s.id }); locSons.delete(s.id); App.sons.oublierUrl(s.id); }
       }
     });
 
@@ -201,6 +226,27 @@
       bilan.photosAjoutees++;
     }
     if (progression) progression(photos.length, photos.length);
+
+    // Sons (chants enregistrés)
+    for (const m of (d.sons || [])) {
+      const sup = locSup.get(m.id);
+      if (sup && (sup.le || '') >= (m.modifieLe || m.creeLe || '')) continue;
+      const loc = locSons.get(m.id);
+      if (loc && (m.modifieLe || '') <= (loc.modifieLe || '')) continue;
+      const rec = Object.assign({}, m);
+      delete rec.fichier;
+      if (loc) rec.blob = loc.blob;
+      else {
+        const ent = entrees && m.fichier ? entrees.get(m.fichier) : null;
+        if (!ent) { if (entrees) bilan.erreurs.push('Son absent du .zip : ' + (m.nomOriginal || m.id)); continue; }
+        rec.blob = await ent.blob(m.type || 'audio/webm');
+      }
+      await App.db.ecrire([{ magasin: 'sons', mettre: rec }]);
+      bilan.sonsAjoutes = (bilan.sonsAjoutes || 0) + 1;
+    }
+
+    // Cibles : on ajoute celles de l'autre appareil
+    if (Array.isArray(d.cibles)) App.cibles.fusionner(d.cibles);
   }
 
   async function importerFichier(f, bilan, progression) {
@@ -237,6 +283,7 @@
       const derniereISO = App.prefs.get('derniereSauvegardeISO', null);
       let tailleTotale = 0;
       c.photos.forEach(function (p) { tailleTotale += tailleBlobs(p); });
+      c.sons.forEach(function (s) { tailleTotale += s.blob ? s.blob.size : 0; });
       let nouv = { obs: 0, photos: 0, taille: 0 };
       if (derniereISO) {
         nouv.obs = c.obs.filter(function (o) { return (o.modifieLe || '') > derniereISO; }).length;
@@ -258,7 +305,8 @@
         '<section class="section"><h2>Exporter</h2>' +
         '<div class="grille-actions">' +
         '<button type="button" class="action-sauv prim" data-exp="complet">' + u.ic('sauvegarde') +
-        '<div><strong>Sauvegarde complète (.zip)</strong><span>' + u.pluriel(c.obs.length, 'observation') + ' et ' + u.pluriel(c.photos.length, 'photo') + ' (originaux compris) · ≈ ' + u.taille(tailleTotale) + '</span></div></button>' +
+        '<div><strong>Sauvegarde complète (.zip)</strong><span>' + u.pluriel(c.obs.length, 'observation') + ', ' + u.pluriel(c.photos.length, 'photo') + ' (originaux compris)' +
+        (c.sons.length ? ', ' + u.pluriel(c.sons.length, 'son') : '') + ' · ≈ ' + u.taille(tailleTotale) + '</span></div></button>' +
         (derniereISO
           ? '<button type="button" class="action-sauv" data-exp="nouveautes">' + u.ic('actualiser') +
             '<div><strong>Nouveautés seulement (.zip)</strong><span>Depuis le ' + u.dateCourte(derniereISO.slice(0, 10)) + ' : ' + u.pluriel(nouv.obs, 'observation') + ', ' + u.pluriel(nouv.photos, 'photo') + ' · ≈ ' + u.taille(nouv.taille) + '</span></div></button>'
@@ -318,7 +366,7 @@
       async function exporterZip(type) {
         etatExp.innerHTML = '<p class="journal-import"><span class="rond-charge"></span> Préparation de la sauvegarde…</p>';
         const prep = await preparer(type);
-        if (type === 'nouveautes' && !prep.obs.length && !prep.nbPhotos && !prep.suppr.length) {
+        if (type === 'nouveautes' && !prep.obs.length && !prep.nbPhotos && !prep.nbSons && !prep.suppr.length) {
           etatExp.innerHTML = '<p class="journal-import">Rien de nouveau depuis ta dernière sauvegarde.</p>';
           return;
         }
@@ -370,7 +418,7 @@
               await exporterZip(type);
             } else if (type === 'json') {
               const suppressions = await App.db.tout('suppressions');
-              const d = { format: FORMAT, version: VERSION_FORMAT, appli: App.VERSION, exporteLe: new Date().toISOString(), type: 'donnees', observations: c.obs, photos: [], suppressions: suppressions };
+              const d = { format: FORMAT, version: VERSION_FORMAT, appli: App.VERSION, exporteLe: new Date().toISOString(), type: 'donnees', observations: c.obs, photos: [], sons: [], cibles: App.cibles.liste(), suppressions: suppressions };
               const nom = 'carnet-oiseaux_donnees_' + u.dateISO() + '.json';
               const blob = new Blob([JSON.stringify(d, null, 1)], { type: 'application/json' });
               App.telechargerBlob(blob, nom);
@@ -402,7 +450,7 @@
         if (!fichiers.length) return;
         // Les parties dans l'ordre (partie 1 d'abord)
         fichiers.sort(function (a, b) { return a.name.localeCompare(b.name, 'fr', { numeric: true }); });
-        const bilan = { ajoutees: 0, misesAJour: 0, ignorees: 0, supprimees: 0, photosAjoutees: 0, photosIgnorees: 0, erreurs: [] };
+        const bilan = { ajoutees: 0, misesAJour: 0, ignorees: 0, supprimees: 0, photosAjoutees: 0, photosIgnorees: 0, sonsAjoutes: 0, erreurs: [] };
         for (let k = 0; k < fichiers.length; k++) {
           const f = fichiers[k];
           etatImp.innerHTML = '<p class="journal-import"><span class="rond-charge"></span> Lecture de ' + u.esc(f.name) + '…</p>';
@@ -420,6 +468,7 @@
           '<span>Import terminé : ' + u.pluriel(bilan.ajoutees, 'observation ajoutée', 'observations ajoutées') + ', ' +
           u.pluriel(bilan.misesAJour, 'mise à jour', 'mises à jour') + ', ' +
           u.pluriel(bilan.photosAjoutees, 'photo ajoutée', 'photos ajoutées') +
+          (bilan.sonsAjoutes ? ', ' + u.pluriel(bilan.sonsAjoutes, 'son ajouté', 'sons ajoutés') : '') +
           (bilan.ignorees ? ' · ' + bilan.ignorees + ' déjà à jour' : '') +
           (bilan.supprimees ? ' · ' + bilan.supprimees + ' supprimée(s)' : '') + '.</span></div></div>' +
           (bilan.erreurs.length ? '<ul class="erreur-champ">' + bilan.erreurs.map(function (x) { return '<li>' + u.esc(x) + '</li>'; }).join('') + '</ul>' : '') +

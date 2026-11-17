@@ -15,7 +15,7 @@
 
 (function (App) {
   const NOM_BASE = 'carnet-oiseaux';
-  const VERSION_BASE = 1;
+  const VERSION_BASE = 2; // 2 : ajout des sons (chants enregistrés)
   let ouverture = null;
 
   function ouvrir() {
@@ -37,6 +37,11 @@
         }
         if (!base.objectStoreNames.contains('suppressions')) {
           base.createObjectStore('suppressions', { keyPath: 'id' });
+        }
+        if (!base.objectStoreNames.contains('sons')) {
+          const s = base.createObjectStore('sons', { keyPath: 'id' });
+          s.createIndex('observationId', 'observationId');
+          s.createIndex('especeId', 'especeId');
         }
       };
       req.onsuccess = function () {
@@ -105,18 +110,24 @@
 
     charger: async function () {
       if (cache) return cache;
-      const res = await Promise.all([App.db.tout('observations'), App.db.tout('photos')]);
-      const obs = res[0], photos = res[1];
+      const res = await Promise.all([App.db.tout('observations'), App.db.tout('photos'), App.db.tout('sons')]);
+      const obs = res[0], photos = res[1], sons = res[2];
       obs.sort(function (a, b) { return cleObs(b).localeCompare(cleObs(a)); }); // plus récentes d'abord
       const photosParId = new Map(photos.map(function (p) { return [p.id, p]; }));
+      const sonsParId = new Map(sons.map(function (s) { return [s.id, s]; }));
       const obsParId = new Map(obs.map(function (o) { return [o.id, o]; }));
-      cache = { obs: obs, photos: photos, photosParId: photosParId, obsParId: obsParId, resume: null };
+      cache = { obs: obs, photos: photos, photosParId: photosParId, sons: sons, sonsParId: sonsParId, obsParId: obsParId, resume: null };
       return cache;
     },
 
     // Photos d'une observation, dans l'ordre choisi
     photosDe: function (c, o) {
       return (o.photoIds || []).map(function (id) { return c.photosParId.get(id); }).filter(Boolean);
+    },
+
+    // Sons (chants enregistrés) d'une observation
+    sonsDe: function (c, o) {
+      return (o.sonIds || []).map(function (id) { return c.sonsParId.get(id); }).filter(Boolean);
     },
 
     // Résumé par espèce : nb d'obs, individus, première/dernière obs, photos, couverture
@@ -160,6 +171,11 @@
         ops.push({ magasin: 'photos', effacer: pid });
         ops.push({ magasin: 'suppressions', mettre: { id: pid, type: 'photo', le: maintenant } });
         if (App.photos) App.photos.oublierUrl(pid);
+      });
+      (o.sonIds || []).forEach(function (sid) {
+        ops.push({ magasin: 'sons', effacer: sid });
+        ops.push({ magasin: 'suppressions', mettre: { id: sid, type: 'son', le: maintenant } });
+        if (App.sons) App.sons.oublierUrl(sid);
       });
       await App.db.ecrire(ops);
     },

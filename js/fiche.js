@@ -91,7 +91,8 @@
           '<div class="chiffre"><b>' + u.dateCourte(r.premiere.date) + '</b><span>première observation</span></div>' +
           '<div class="chiffre"><b>' + u.dateCourte(r.derniere.date) + '</b><span>dernière observation</span></div>' +
           '</div>' +
-          '<p style="margin:14px 0"><a class="btn btn-prim" href="#/ajouter/' + encodeURIComponent(e.id) + '">' + u.ic('plus') + 'Nouvelle observation</a></p>' +
+          '<div class="actions-fiche"><a class="btn btn-prim" href="#/ajouter/' + encodeURIComponent(e.id) + '">' + u.ic('plus') + 'Nouvelle observation</a>' +
+          '<button type="button" class="btn btn-second" data-partager>' + u.ic('partager') + 'Partager</button></div>' +
           (r.photos.length
             ? '<h3 class="section-titre" style="font-size:18px">Photos <span class="compte">' + r.photos.length + '</span></h3>' +
               '<div class="galerie">' + r.photos.map(function (x) { return App.rendu.tuile(x.photo, x.obs, { sansEspece: true }); }).join('') + '</div>'
@@ -108,6 +109,8 @@
         '<div class="fiche-titre">' +
         '<h1>' + u.esc(App.esp.nom(e, langue)) + '</h1>' +
         '<div class="latin">' + u.esc(e.la) + '</div>' + tags +
+        (e.inconnue ? '' : '<button type="button" class="puce puce-cible' + (App.cibles.contient(e.id) ? ' on' : '') + '" data-cible aria-pressed="' + App.cibles.contient(e.id) + '">' +
+          u.ic('cible') + (App.cibles.contient(e.id) ? 'Dans mes cibles' : 'Cible') + '</button>') +
         '</div>' +
         (e.inconnue ? '<div class="encart encart-verif">' + u.ic('alerte') + '<div>Cette espèce n\'existe plus dans <code>data/especes.js</code>. Tes observations sont conservées.</div></div>' : '') +
         '<div class="fiche-grille">' +
@@ -120,6 +123,19 @@
         '<section class="section" id="mes-obs"><h2>Mes observations</h2>' + mesObs + '</section>';
 
       if (r) App.rendu.brancher(el, r.photos);
+
+      const boutonCible = el.querySelector('[data-cible]');
+      if (boutonCible) boutonCible.addEventListener('click', function () {
+        const ajoutee = App.cibles.basculer(e.id);
+        boutonCible.classList.toggle('on', ajoutee);
+        boutonCible.setAttribute('aria-pressed', String(ajoutee));
+        boutonCible.innerHTML = u.ic('cible') + (ajoutee ? 'Dans mes cibles' : 'Cible');
+        App.ui.toast(ajoutee
+          ? (r ? 'Ajoutée à tes cibles (déjà observée)' : 'Ajoutée à tes cibles · en saison : ' + App.saison.plage(e))
+          : 'Retirée de tes cibles');
+      });
+      const boutonPartage = el.querySelector('[data-partager]');
+      if (boutonPartage) boutonPartage.addEventListener('click', function () { App.partage.ouvrir(e.id); });
     }
   });
 })(window.App);

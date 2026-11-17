@@ -100,6 +100,7 @@
           '<button value="oui" class="btn ' + (o.danger ? 'btn-danger' : 'btn-prim') + '">' + u.esc(o.ok || 'Confirmer') + '</button>' +
           '</div></form>';
         d.returnValue = '';
+        d.onclick = null;
         d.onclose = function () { resoudre(d.returnValue === 'oui'); };
         d.showModal();
         const bouton = d.querySelector(o.danger ? 'button[value="non"]' : 'button[value="oui"]');
@@ -175,6 +176,7 @@
         '<a class="btn btn-prim" href="#/catalogue">Retour au catalogue</a></div>';
     }
     majOutils();
+    if (App.sortie) App.sortie.majPastille(r.nom);
     if (garderDefilement) window.scrollTo(0, y);
     else window.scrollTo(0, def.garderPosition ? (positions[location.hash] || 0) : 0);
   }

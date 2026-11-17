@@ -52,6 +52,8 @@
           '</span>');
       }
       meta.push('<span>' + u.pluriel(o.nombre || 1, 'individu') + '</span>');
+      if (o.sortie) meta.push('<span>' + u.ic('chemin') + 'Sortie</span>');
+      const sons = App.donnees.sonsDe(c, o);
       if ((o.meteo && o.meteo.length) || (o.temperature !== null && o.temperature !== undefined && o.temperature !== '')) {
         const icone = o.meteo && o.meteo.length ? (App.METEOS.find(function (m) { return m[0] === o.meteo[0]; }) || [0, 0, 'soleil'])[2] : 'soleil';
         meta.push('<span>' + u.ic(icone) +
@@ -76,6 +78,7 @@
           return '<button type="button" data-ph="' + p.id + '" aria-label="Agrandir la photo">' +
             (p.miniature ? '<img src="' + App.photos.url(p, 'miniature') + '" alt="" loading="lazy" decoding="async">' : '') + '</button>';
         }).join('') + '</div>' : '') +
+        (sons.length ? '<div class="sons-ligne">' + sons.map(function (s) { return App.sons.puce(s, 'data-son'); }).join('') + '</div>' : '') +
         '<div class="obs-actions">' +
         '<a class="btn btn-second btn-petit" href="#/modifier/' + encodeURIComponent(o.id) + '">' + u.ic('crayon') + 'Modifier</a>' +
         '<button type="button" class="btn btn-danger-doux btn-petit" data-suppr="' + o.id + '">' + u.ic('poubelle') + 'Supprimer</button>' +
@@ -86,6 +89,13 @@
     // fournisseur : liste [{photo, obs}] ou fonction(photoId) qui la renvoie
     brancher: function (el, fournisseur) {
       el.addEventListener('click', async function (ev) {
+        const son = ev.target.closest('[data-son]');
+        if (son) {
+          const cs = await App.donnees.charger();
+          const s = cs.sonsParId.get(son.dataset.son);
+          if (s) App.sons.lire(s, son);
+          return;
+        }
         const ph = ev.target.closest('[data-ph]');
         if (ph) {
           ev.preventDefault();
@@ -149,7 +159,8 @@
           '<div class="vide"><svg class="ph-oiseau" aria-hidden="true"><use href="#i-oiseau"/></svg>' +
           '<h2>Ton carnet t’attend</h2>' +
           '<p>Ajoute ta première observation : l’espèce, le lieu, le nombre d’individus et tes photos.</p>' +
-          '<a class="btn btn-prim" href="#/ajouter">' + u.ic('plus') + 'Première observation</a></div>';
+          '<a class="btn btn-prim" href="#/ajouter">' + u.ic('plus') + 'Première observation</a>' +
+          '<p style="margin-top:14px"><a class="lien-btn" href="#/sortie">ou démarrer une sortie (comptage de plusieurs espèces)</a></p></div>';
         return;
       }
 
@@ -162,6 +173,8 @@
           titre: 'Mes observations',
           sous: u.pluriel(resume.size, 'espèce') + ' · ' + u.pluriel(c.obs.length, 'observation') + ' · ' + u.pluriel(nbPhotos, 'photo')
         }) + rappel +
+        '<a class="btn btn-doux btn-bloc lien-sortie" href="#/sortie">' + u.ic('chemin') +
+        (App.prefs.get('sortie', null) ? 'Reprendre la sortie en cours' : 'Démarrer une sortie') + '</a>' +
         '<div class="outils-obs">' +
         '<div class="seg" role="group" aria-label="Type d’affichage">' +
         MODES.map(function (m) {
@@ -361,7 +374,10 @@
       meteo: o ? (o.meteo || []).slice() : [],
       photosGardees: o ? App.donnees.photosDe(c, o) : [],
       photosRetirees: [],
-      nouvelles: []
+      nouvelles: [],
+      sonsGardes: o ? App.donnees.sonsDe(c, o) : [],
+      sonsRetires: [],
+      nouveauxSons: []
     };
     let file = Promise.resolve();
     let dateTouchee = !!o;
@@ -423,6 +439,14 @@
       '</div>' +
       '<p class="aide">L’original est gardé intact pour le téléchargement ; une copie allégée sert à l’affichage. Si la photo contient sa date ou sa position (EXIF), je les reprends.</p>' +
       '<div class="photos-form" id="f-photos"></div></div>' +
+
+      '<div class="champ"><span class="etiq">Chants et cris</span>' +
+      '<div class="boutons-photo">' +
+      (App.sons.disponible() ? '<button type="button" class="btn btn-second" id="f-micro">' + u.ic('micro') + 'Enregistrer</button>' : '') +
+      '<label class="btn btn-second">' + u.ic('importer') + 'Fichier son<input type="file" id="f-son" accept="audio/*" hidden></label>' +
+      '</div>' +
+      '<p class="aide">Pour un oiseau qui chante sans se montrer : enregistre-le (3 min max), tu pourras le réécouter ou le faire identifier plus tard.</p>' +
+      '<div class="sons-form" id="f-sons"></div></div>' +
 
       (o ? '<div class="zone-danger"><button type="button" class="btn btn-danger-doux" id="f-suppr">' + u.ic('poubelle') + 'Supprimer cette observation</button></div>' : '') +
       '</form>' +
@@ -604,6 +628,98 @@
     });
     rendrePhotos();
 
+    // --- Sons : enregistrement au micro ou fichier importé
+    const zoneSons = $('#f-sons');
+    const btnMicro = $('#f-micro');
+    let enregistrement = null;
+
+    function nomSon(s) {
+      return u.slug(App.esp.get(etat.especeId || s.especeId || '').fr || 'oiseau') + '_' + (champDate.value || u.dateISO()) +
+        '_chant.' + App.sons.extension(s.type);
+    }
+    function rendreSons() {
+      zoneSons.innerHTML =
+        etat.sonsGardes.map(function (s) {
+          return '<div class="son-form">' + App.sons.puce(s, 'data-ecoute-ex') +
+            '<button type="button" class="btn-icone" data-dl-son="' + s.id + '" aria-label="Télécharger ce son">' + u.ic('telecharger') + '</button>' +
+            '<button type="button" class="btn-icone" data-retirer-son-ex="' + s.id + '" aria-label="Retirer ce son">' + u.ic('x') + '</button></div>';
+        }).join('') +
+        etat.nouveauxSons.map(function (s) {
+          return '<div class="son-form">' + App.sons.puce(s, 'data-ecoute-nv') +
+            '<span class="muet petit">nouveau</span>' +
+            '<button type="button" class="btn-icone" data-retirer-son-nv="' + s.id + '" aria-label="Retirer ce son">' + u.ic('x') + '</button></div>';
+        }).join('');
+    }
+    async function finirEnregistrement() {
+      if (!enregistrement) return;
+      const ctrl = enregistrement;
+      enregistrement = null;
+      const res = await ctrl.arreter();
+      if (btnMicro) { btnMicro.classList.remove('enregistre'); btnMicro.innerHTML = u.ic('micro') + 'Enregistrer'; }
+      if (res.blob.size) {
+        etat.nouveauxSons.push({ id: u.uid('n'), blob: res.blob, type: res.type, duree: res.duree, nomOriginal: 'chant.' + App.sons.extension(res.type) });
+        modifie();
+        rendreSons();
+      }
+    }
+    if (btnMicro) btnMicro.addEventListener('click', async function () {
+      if (enregistrement) { await finirEnregistrement(); return; }
+      try {
+        App.sons.arreter();
+        btnMicro.classList.add('enregistre');
+        btnMicro.innerHTML = u.ic('stop') + 'Arrêter · 0:00';
+        enregistrement = await App.sons.enregistrer(function (s) {
+          if (s >= App.sons.DUREE_MAX) { finirEnregistrement(); return; }
+          if (enregistrement) btnMicro.innerHTML = u.ic('stop') + 'Arrêter · ' + App.sons.format(s);
+        });
+      } catch (e) {
+        enregistrement = null;
+        btnMicro.classList.remove('enregistre');
+        btnMicro.innerHTML = u.ic('micro') + 'Enregistrer';
+        App.ui.toast(e && e.name === 'NotAllowedError'
+          ? 'Accès au micro refusé : autorise-le dans les réglages du navigateur.'
+          : 'Micro indisponible : ' + (e && e.message ? e.message : e), { erreur: true });
+      }
+    });
+    $('#f-son').addEventListener('change', async function () {
+      const f = this.files && this.files[0];
+      this.value = '';
+      if (!f) return;
+      const duree = await App.sons.lireDuree(f);
+      etat.nouveauxSons.push({ id: u.uid('n'), blob: f, type: f.type || 'audio/mpeg', duree: duree, nomOriginal: f.name || 'son' });
+      modifie();
+      rendreSons();
+    });
+    zoneSons.addEventListener('click', function (ev) {
+      const cherche = function (liste, id) { return liste.find(function (x) { return x.id === id; }); };
+      const ex = ev.target.closest('[data-ecoute-ex]');
+      if (ex) { const s = cherche(etat.sonsGardes, ex.dataset.ecouteEx); if (s) App.sons.lire(s, ex); return; }
+      const nv = ev.target.closest('[data-ecoute-nv]');
+      if (nv) { const s = cherche(etat.nouveauxSons, nv.dataset.ecouteNv); if (s) App.sons.lire(s, nv); return; }
+      const dl = ev.target.closest('[data-dl-son]');
+      if (dl) { const s = cherche(etat.sonsGardes, dl.dataset.dlSon); if (s) App.telechargerBlob(s.blob, nomSon(s)); return; }
+      const rex = ev.target.closest('[data-retirer-son-ex]');
+      if (rex) {
+        App.sons.arreter();
+        etat.sonsGardes = etat.sonsGardes.filter(function (x) { return x.id !== rex.dataset.retirerSonEx; });
+        etat.sonsRetires.push(rex.dataset.retirerSonEx);
+        modifie(); rendreSons();
+        return;
+      }
+      const rnv = ev.target.closest('[data-retirer-son-nv]');
+      if (rnv) {
+        App.sons.arreter();
+        App.sons.oublierUrl(rnv.dataset.retirerSonNv);
+        etat.nouveauxSons = etat.nouveauxSons.filter(function (x) { return x.id !== rnv.dataset.retirerSonNv; });
+        rendreSons();
+      }
+    });
+    App.surNettoyage(function () {
+      if (enregistrement) enregistrement.annuler();
+      App.sons.arreter();
+    });
+    rendreSons();
+
     // --- Suppression (en modification)
     if (o) {
       $('#f-suppr').addEventListener('click', async function () {
@@ -631,9 +747,17 @@
       btnEnreg.innerHTML = '<span class="rond-charge" aria-hidden="true"></span>' +
         (etat.nouvelles.some(function (n) { return !n.res && !n.erreur; }) ? 'Traitement des photos…' : 'Enregistrement…');
       try {
+        await finirEnregistrement();
         await file;
         const maintenant = new Date().toISOString();
         const id = o ? o.id : u.uid('obs');
+        const sonsNouveaux = etat.nouveauxSons.map(function (s) {
+          return {
+            id: u.uid('son'), observationId: id, especeId: etat.especeId,
+            type: s.type, duree: s.duree, taille: s.blob.size, nomOriginal: s.nomOriginal,
+            blob: s.blob, creeLe: maintenant, modifieLe: maintenant
+          };
+        });
         const nouvelles = etat.nouvelles.map(function (n) {
           const r = n.res || { original: n.fichier, nomOriginal: n.fichier.name, type: n.fichier.type, taille: n.fichier.size, exif: {} };
           return {
@@ -659,6 +783,8 @@
           temperature: temp !== null && isFinite(temp) ? temp : null,
           notes: champNotes.value.trim(),
           photoIds: etat.photosGardees.map(function (p) { return p.id; }).concat(nouvelles.map(function (p) { return p.id; })),
+          sonIds: etat.sonsGardes.map(function (s) { return s.id; }).concat(sonsNouveaux.map(function (s) { return s.id; })),
+          sortie: o && o.sortie ? o.sortie : undefined,
           creeLe: o ? o.creeLe : maintenant,
           modifieLe: maintenant
         };
@@ -669,18 +795,35 @@
           ops.push({ magasin: 'suppressions', mettre: { id: pid, type: 'photo', le: maintenant } });
           App.photos.oublierUrl(pid);
         });
+        sonsNouveaux.forEach(function (s) { ops.push({ magasin: 'sons', mettre: s }); });
+        etat.sonsRetires.forEach(function (sid) {
+          ops.push({ magasin: 'sons', effacer: sid });
+          ops.push({ magasin: 'suppressions', mettre: { id: sid, type: 'son', le: maintenant } });
+          App.sons.oublierUrl(sid);
+        });
         if (o && o.especeId !== etat.especeId) {
           etat.photosGardees.forEach(function (p) {
             ops.push({ magasin: 'photos', mettre: Object.assign({}, p, { especeId: etat.especeId, favori: false, modifieLe: maintenant }) });
           });
+          etat.sonsGardes.forEach(function (s) {
+            ops.push({ magasin: 'sons', mettre: Object.assign({}, s, { especeId: etat.especeId, modifieLe: maintenant }) });
+          });
         }
+        const nouvelleEspece = !resume.has(obs.especeId);
         await App.db.ecrire(ops);
         App.formulaireModifie = false;
         App.garde = null;
         App.demanderPersistance();
-        App.ui.toast(o ? 'Observation modifiée' : 'Observation enregistrée', {
-          action: o ? null : 'Nouvelle', surAction: function () { App.aller('#/ajouter'); }
-        });
+        if (nouvelleEspece) {
+          const cible = App.cibles.contient(obs.especeId);
+          App.ui.toast('🎉 Nouvelle espèce pour ton carnet : ' + App.esp.nom(App.esp.get(obs.especeId)) + (cible ? ' · 🎯 cible atteinte !' : ''), {
+            action: 'Partager', surAction: function () { App.partage.ouvrir(obs.especeId); }, duree: 9000
+          });
+        } else {
+          App.ui.toast(o ? 'Observation modifiée' : 'Observation enregistrée', {
+            action: o ? null : 'Nouvelle', surAction: function () { App.aller('#/ajouter'); }
+          });
+        }
         location.replace('#/espece/' + encodeURIComponent(obs.especeId));
       } catch (e) {
         console.error(e);

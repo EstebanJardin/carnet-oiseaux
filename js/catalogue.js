@@ -34,7 +34,8 @@
   function carte(e, r, langue) {
     const tags = e.presence.map(function (p) {
       return '<span class="tag tag-' + p + '">' + App.PRESENCES_COURT[p] + '</span>';
-    }).join('') + (r ? '<span class="tag tag-ok">Observé ✓</span>' : '');
+    }).join('') + (r ? '<span class="tag tag-ok">Observé ✓</span>'
+      : (App.cibles.contient(e.id) ? '<span class="tag tag-cible">' + u.ic('cible') + 'Cible</span>' : ''));
     return '<a class="carte-esp" href="#/espece/' + encodeURIComponent(e.id) + '">' +
       App.ui.vignette(r && r.couverture, '', e.id) +
       '<div class="carte-txt">' +
@@ -52,6 +53,7 @@
     afficher: async function (el) {
       const resume = await App.donnees.resume();
       const rappel = await App.ui.rappelSauvegarde();
+      const jour = await App.saison.bandeauJour();
       const langue = App.langue();
       const total = App.esp.liste.length;
       const vues = App.esp.liste.filter(function (e) { return resume.has(e.id); }).length;
@@ -62,6 +64,7 @@
         App.ui.entete({ titre: 'Catalogue', sous: vues + ' / ' + total + ' espèces observées · ' + pct + ' %' }) +
         '<div class="progression" role="progressbar" aria-label="Espèces observées" aria-valuemin="0" aria-valuemax="' + total + '" aria-valuenow="' + vues + '">' +
         '<span style="width:' + pct + '%"></span></div>' +
+        jour +
         rappel +
         '<div class="barre-recherche">' +
         '<label class="recherche">' + u.ic('recherche') +
@@ -75,7 +78,7 @@
         puceSelect('groupe', window.GROUPES, etat.groupe, 'Tous les groupes') +
         puceSelect('habitat', window.HABITATS, etat.habitat, 'Tous les habitats') +
         puceSelect('saison', window.PRESENCES, etat.saison, 'Toutes les présences') +
-        puceSelect('statut', { oui: 'Déjà observées', non: 'Pas encore vues', verif: 'Infos à vérifier' }, etat.statut, 'Observées ou non') +
+        puceSelect('statut', { oui: 'Déjà observées', non: 'Pas encore vues', cible: 'Mes cibles', verif: 'Infos à vérifier' }, etat.statut, 'Observées ou non') +
         '<button type="button" class="puce" data-f="tri" title="Changer le tri">' + u.ic('liste') +
         (etat.tri === 'alpha' ? 'Tri A → Z' : 'Ordre des guides') + '</button>' +
         '</div></div>' +
@@ -101,6 +104,7 @@
           if (etat.statut === 'oui' && !resume.has(e.id)) return false;
           if (etat.statut === 'non' && resume.has(e.id)) return false;
           if (etat.statut === 'verif' && !e.aVerifier) return false;
+          if (etat.statut === 'cible' && !App.cibles.contient(e.id)) return false;
           return true;
         });
         if (etat.tri === 'alpha') {
