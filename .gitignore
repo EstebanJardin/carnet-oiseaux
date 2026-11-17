@@ -1,0 +1,7 @@
+# Fichiers de test locaux (à ne pas publier)
+.claude/
+
+# Fichiers système
+Thumbs.db
+desktop.ini
+.DS_Store

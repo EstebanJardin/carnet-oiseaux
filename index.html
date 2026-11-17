@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Carnet d'oiseaux · Sredna Gora</title>
+<meta name="description" content="Inventaire personnel des oiseaux de Mrachenik et de la Sredna Gora (Bulgarie). Fonctionne hors connexion.">
+<meta name="theme-color" content="#F4F1E8">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png" type="image/png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="stylesheet" href="css/style.css">
+<script>
+  /* Applique le thème avant l'affichage (évite un flash de couleur) */
+  (function () {
+    try {
+      var p = JSON.parse(localStorage.getItem('carnet-oiseaux:prefs') || '{}');
+      if (p.theme === 'dark' || p.theme === 'light') document.documentElement.setAttribute('data-theme', p.theme);
+    } catch (e) {}
+  })();
+</script>
+</head>
+<body>
+
+<!-- Icônes intégrées (aucune ressource externe : tout marche hors connexion) -->
+<svg xmlns="http://www.w3.org/2000/svg" style="display:none" aria-hidden="true">
+  <symbol id="i-recherche" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.6-3.6"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12.5 4.5 4.5L19 7.5"/></symbol>
+  <symbol id="i-chevron" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
+  <symbol id="i-gauche" viewBox="0 0 24 24"><path d="m15 5-7 7 7 7"/></symbol>
+  <symbol id="i-droite" viewBox="0 0 24 24"><path d="m9 5 7 7-7 7"/></symbol>
+  <symbol id="i-retour" viewBox="0 0 24 24"><path d="M19 12H5M11 6l-6 6 6 6"/></symbol>
+  <symbol id="i-livre" viewBox="0 0 24 24"><path d="M5 4.5A1.5 1.5 0 0 1 6.5 3H19v15H6.5A1.5 1.5 0 0 0 5 19.5z"/><path d="M5 19.5A1.5 1.5 0 0 0 6.5 21H19v-3"/><path d="M9 7.5h6"/></symbol>
+  <symbol id="i-jumelles" viewBox="0 0 24 24"><circle cx="6.5" cy="16" r="3.5"/><circle cx="17.5" cy="16" r="3.5"/><path d="M10 16h4"/><path d="M3.2 15 5 6.6A1.8 1.8 0 0 1 6.8 5h1.4A1.8 1.8 0 0 1 10 6.8V16"/><path d="M20.8 15 19 6.6A1.8 1.8 0 0 0 17.2 5h-1.4A1.8 1.8 0 0 0 14 6.8V16"/></symbol>
+  <symbol id="i-stats" viewBox="0 0 24 24"><path d="M4 20h16"/><rect x="5.5" y="11" width="3" height="6" rx=".5"/><rect x="10.5" y="5.5" width="3" height="11.5" rx=".5"/><rect x="15.5" y="8.5" width="3" height="8.5" rx=".5"/></symbol>
+  <symbol id="i-sauvegarde" viewBox="0 0 24 24"><path d="M4.5 8.5h15V19a1 1 0 0 1-1 1h-13a1 1 0 0 1-1-1z"/><rect x="3" y="4" width="18" height="4.5" rx="1"/><path d="M10 12.5h4"/></symbol>
+  <symbol id="i-photo" viewBox="0 0 24 24"><path d="M3 8.5A1.5 1.5 0 0 1 4.5 7h2.3l1.7-2.5h7L17.2 7h2.3A1.5 1.5 0 0 1 21 8.5v9a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 17.5z"/><circle cx="12" cy="13" r="3.5"/></symbol>
+  <symbol id="i-galerie" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8.5" cy="9.5" r="1.8"/><path d="m21 15-4.5-4.5L6 20"/></symbol>
+  <symbol id="i-position" viewBox="0 0 24 24"><circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="2.5"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></symbol>
+  <symbol id="i-epingle" viewBox="0 0 24 24"><path d="M12 21s-6.5-5.8-6.5-11a6.5 6.5 0 0 1 13 0c0 5.2-6.5 11-6.5 11z"/><circle cx="12" cy="10" r="2.3"/></symbol>
+  <symbol id="i-telecharger" viewBox="0 0 24 24"><path d="M12 4v11M7 10.5l5 5 5-5M5 20h14"/></symbol>
+  <symbol id="i-importer" viewBox="0 0 24 24"><path d="M12 16V5M7 9.5l5-5 5 5M5 20h14"/></symbol>
+  <symbol id="i-poubelle" viewBox="0 0 24 24"><path d="M4 7h16M10 11v6M14 11v6M9 7V4.5h6V7M6 7l1 13h10l1-13"/></symbol>
+  <symbol id="i-crayon" viewBox="0 0 24 24"><path d="M4 20h4L19 9a2.8 2.8 0 0 0-4-4L4 16z"/><path d="m13.5 6.5 4 4"/></symbol>
+  <symbol id="i-soleil" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2.5v2M12 19.5v2M4.6 4.6 6 6M18 18l1.4 1.4M2.5 12h2M19.5 12h2M4.6 19.4 6 18M18 6l1.4-1.4"/></symbol>
+  <symbol id="i-lune" viewBox="0 0 24 24"><path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a7 7 0 0 0 10.5 10.5z"/></symbol>
+  <symbol id="i-nuage" viewBox="0 0 24 24"><path d="M7 19h10.5a4 4 0 0 0 .4-7.98 6 6 0 0 0-11.6 1.6A3.3 3.3 0 0 0 7 19z"/></symbol>
+  <symbol id="i-pluie" viewBox="0 0 24 24"><path d="M7 15.5h10.5a4 4 0 0 0 .4-7.98 6 6 0 0 0-11.6 1.6A3.3 3.3 0 0 0 7 15.5z"/><path d="m8.5 18.5-1 2.5M12.5 18.5l-1 2.5M16.5 18.5l-1 2.5"/></symbol>
+  <symbol id="i-neige" viewBox="0 0 24 24"><path d="M12 3v18M4.2 7.5l15.6 9M4.2 16.5l15.6-9"/><path d="m9.5 4.5 2.5 2 2.5-2M9.5 19.5l2.5-2 2.5 2"/></symbol>
+  <symbol id="i-brouillard" viewBox="0 0 24 24"><path d="M4 8h13M3 12h18M6 16h14M4 20h10"/></symbol>
+  <symbol id="i-vent" viewBox="0 0 24 24"><path d="M3 9h10.5A2.5 2.5 0 1 0 11 6.5"/><path d="M3 13h15a3 3 0 1 1-3 3"/><path d="M3 17h6"/></symbol>
+  <symbol id="i-etoile" viewBox="0 0 24 24"><path d="m12 3.5 2.6 5.4 5.9.8-4.3 4.1 1 5.8L12 16.9l-5.2 2.7 1-5.8-4.3-4.1 5.9-.8z"/></symbol>
+  <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.01"/></symbol>
+  <symbol id="i-alerte" viewBox="0 0 24 24"><path d="M10.3 4.2 2.6 18a2 2 0 0 0 1.7 3h15.4a2 2 0 0 0 1.7-3L13.7 4.2a2 2 0 0 0-3.4 0z"/><path d="M12 9.5V14M12 17.5v.01"/></symbol>
+  <symbol id="i-calendrier" viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="15.5" rx="2"/><path d="M3.5 10h17M8 3v4M16 3v4"/></symbol>
+  <symbol id="i-horloge" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></symbol>
+  <symbol id="i-carte" viewBox="0 0 24 24"><path d="m9 4-6 2v14l6-2 6 2 6-2V4l-6 2z"/><path d="M9 4v14M15 6v14"/></symbol>
+  <symbol id="i-grille" viewBox="0 0 24 24"><rect x="4" y="4" width="7" height="7" rx="1.5"/><rect x="13" y="4" width="7" height="7" rx="1.5"/><rect x="4" y="13" width="7" height="7" rx="1.5"/><rect x="13" y="13" width="7" height="7" rx="1.5"/></symbol>
+  <symbol id="i-liste" viewBox="0 0 24 24"><path d="M9 6h11M9 12h11M9 18h11M4.5 6h.01M4.5 12h.01M4.5 18h.01"/></symbol>
+  <symbol id="i-couches" viewBox="0 0 24 24"><path d="m12 3 9 5-9 5-9-5z"/><path d="m3 13 9 5 9-5"/></symbol>
+  <symbol id="i-externe" viewBox="0 0 24 24"><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></symbol>
+  <symbol id="i-bouclier" viewBox="0 0 24 24"><path d="M12 3 5 6v5.5c0 4.4 3 8 7 9.5 4-1.5 7-5.1 7-9.5V6z"/><path d="m9 12 2 2 4-4"/></symbol>
+  <symbol id="i-fichier" viewBox="0 0 24 24"><path d="M14 3H6.5A1.5 1.5 0 0 0 5 4.5v15A1.5 1.5 0 0 0 6.5 21h11a1.5 1.5 0 0 0 1.5-1.5V8z"/><path d="M14 3v5h5"/></symbol>
+  <symbol id="i-tableur" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M4 9.5h16M4 15h16M10 4v16"/></symbol>
+  <symbol id="i-actualiser" viewBox="0 0 24 24"><path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 4v7h-7"/></symbol>
+  <!-- Silhouette d'oiseau (logo, vignettes vides) -->
+  <symbol id="i-oiseau" viewBox="0 0 512 512">
+    <g fill="currentColor" stroke="none">
+      <circle cx="188" cy="196" r="70"/>
+      <ellipse cx="282" cy="292" rx="132" ry="100" transform="rotate(-22 282 292)"/>
+      <path d="M378 262 478 202 458 298 392 324z"/>
+      <path d="M124 176 76 203 128 218z"/>
+    </g>
+    <ellipse cx="306" cy="276" rx="84" ry="46" transform="rotate(-28 306 276)" fill="#000" fill-opacity=".13" stroke="none"/>
+    <circle cx="170" cy="186" r="13" stroke="none" style="fill:var(--oeil,#fff)"/>
+    <path d="M248 386 240 432M302 384 298 432" fill="none" stroke="currentColor" stroke-width="14" stroke-linecap="round"/>
+  </symbol>
+</svg>
+
+<nav class="nav" aria-label="Navigation principale">
+  <div class="marque">
+    <svg class="marque-logo" aria-hidden="true"><use href="#i-oiseau"/></svg>
+    <div><strong>Carnet d'oiseaux</strong><span>Sredna Gora · Mrachenik</span></div>
+  </div>
+  <a href="#/ajouter" data-vue="ajouter" class="nav-ajout" aria-label="Ajouter une observation">
+    <span class="rond"><svg class="ic" aria-hidden="true"><use href="#i-plus"/></svg></span>
+    <span class="lbl">Nouvelle observation</span>
+  </a>
+  <a href="#/catalogue" data-vue="catalogue">
+    <svg class="ic" aria-hidden="true"><use href="#i-livre"/></svg>
+    <span class="lbl-court">Catalogue</span><span class="lbl-long">Catalogue</span>
+  </a>
+  <a href="#/observations" data-vue="observations">
+    <svg class="ic" aria-hidden="true"><use href="#i-jumelles"/></svg>
+    <span class="lbl-court">Mes obs.</span><span class="lbl-long">Mes observations</span>
+  </a>
+  <a href="#/stats" data-vue="stats">
+    <svg class="ic" aria-hidden="true"><use href="#i-stats"/></svg>
+    <span class="lbl-court">Stats</span><span class="lbl-long">Statistiques</span>
+  </a>
+  <a href="#/sauvegarde" data-vue="sauvegarde">
+    <svg class="ic" aria-hidden="true"><use href="#i-sauvegarde"/></svg>
+    <span class="lbl-court">Sauvegarde</span><span class="lbl-long">Sauvegarde</span>
+  </a>
+  <div class="nav-pied">
+    <button type="button" class="btn-icone" data-action="langue" title="Langue des noms d'espèces"></button>
+    <button type="button" class="btn-icone" data-action="theme" title="Thème clair ou sombre"></button>
+  </div>
+</nav>
+
+<main id="vue" tabindex="-1"></main>
+
+<dialog id="dlg-confirm" class="dlg-confirm"></dialog>
+<dialog id="dlg-espece" class="feuille" aria-label="Choisir une espèce"></dialog>
+<dialog id="visionneuse" class="visio" aria-label="Visionneuse de photos"></dialog>
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+<div id="maj" class="bandeau-maj" hidden>
+  <span>Nouvelle version de l'appli disponible</span>
+  <button type="button" class="btn btn-doux" id="maj-ok">Mettre à jour</button>
+</div>
+
+<noscript><p style="padding:24px">Cette appli a besoin de JavaScript pour fonctionner.</p></noscript>
+
+<script src="data/especes.js"></script>
+<script src="js/utils.js"></script>
+<script src="js/db.js"></script>
+<script src="js/photos.js"></script>
+<script src="js/zip.js"></script>
+<script src="js/catalogue.js"></script>
+<script src="js/observations.js"></script>
+<script src="js/fiche.js"></script>
+<script src="js/stats.js"></script>
+<script src="js/sauvegarde.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>

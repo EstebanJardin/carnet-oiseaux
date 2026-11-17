@@ -1,0 +1,33 @@
+{
+  "id": "./",
+  "name": "Carnet d'oiseaux · Sredna Gora",
+  "short_name": "Oiseaux",
+  "description": "Inventaire des oiseaux de Mrachenik et de la Sredna Gora (Bulgarie). Fonctionne hors connexion.",
+  "lang": "fr",
+  "dir": "ltr",
+  "start_url": "./#/catalogue",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#F4F1E8",
+  "theme_color": "#2E5B47",
+  "categories": ["education", "lifestyle", "photo"],
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    {
+      "name": "Nouvelle observation",
+      "short_name": "Ajouter",
+      "url": "./#/ajouter",
+      "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png" }]
+    },
+    {
+      "name": "Mes observations",
+      "short_name": "Observations",
+      "url": "./#/observations",
+      "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png" }]
+    }
+  ]
+}

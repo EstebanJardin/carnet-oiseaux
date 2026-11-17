@@ -1,0 +1,209 @@
+/* =====================================================================
+   utils.js — outils communs : texte, dates, réglages, espèces
+   ===================================================================== */
+'use strict';
+window.App = window.App || {};
+
+(function (App) {
+  const u = {};
+  App.u = u;
+
+  // Version de l'appli (à faire correspondre avec VERSION dans sw.js)
+  App.VERSION = '1.0.0';
+
+  // Les vues (écrans) s'enregistrent ici ; app.js, chargé en dernier, les affiche
+  App._vues = {};
+  App.vue = function (nom, def) { App._vues[nom] = def; };
+
+  /* ---------- Texte ---------- */
+
+  // Normalise pour la recherche : minuscules, sans accents, tirets et apostrophes → espaces
+  u.norm = function (s) {
+    return (s == null ? '' : String(s))
+      .replace(/[œŒ]/g, 'oe').replace(/[æÆ]/g, 'ae')
+      .normalize('NFD').replace(/[̀-ͯ]/g, '')
+      .toLowerCase()
+      .replace(/[-'’_.,;:()«»"]/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+  };
+
+  // Translittération officielle bulgare → alphabet latin (système de 2009)
+  const TRANSLIT = {
+    'а': 'a', 'б': 'b', 'в': 'v', 'г': 'g', 'д': 'd', 'е': 'e', 'ж': 'zh', 'з': 'z', 'и': 'i',
+    'й': 'y', 'к': 'k', 'л': 'l', 'м': 'm', 'н': 'n', 'о': 'o', 'п': 'p', 'р': 'r', 'с': 's',
+    'т': 't', 'у': 'u', 'ф': 'f', 'х': 'h', 'ц': 'ts', 'ч': 'ch', 'ш': 'sh', 'щ': 'sht',
+    'ъ': 'a', 'ь': 'y', 'ю': 'yu', 'я': 'ya'
+  };
+  u.translit = function (s) {
+    return Array.from(s || '').map(function (c) {
+      const min = c.toLowerCase();
+      const t = TRANSLIT[min];
+      if (t === undefined) return c;
+      return c !== min ? t.charAt(0).toUpperCase() + t.slice(1) : t;
+    }).join('');
+  };
+
+  // Identifiant lisible pour les noms de fichiers : « Pic épeiche » → « pic-epeiche »
+  u.slug = function (s) {
+    return u.norm(u.translit(s)).replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || 'oiseau';
+  };
+
+  u.esc = function (s) {
+    return (s == null ? '' : String(s)).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  };
+
+  u.ic = function (nom, cls) {
+    return '<svg class="ic ' + (cls || '') + '" aria-hidden="true"><use href="#i-' + nom + '"/></svg>';
+  };
+
+  u.pluriel = function (n, un, plusieurs) {
+    return n + ' ' + (n > 1 ? (plusieurs || un + 's') : un);
+  };
+
+  u.nombre = function (n) { return Number(n || 0).toLocaleString('fr-FR'); };
+
+  u.taille = function (octets) {
+    if (octets == null || isNaN(octets)) return '?';
+    const unites = ['o', 'Ko', 'Mo', 'Go', 'To'];
+    let n = octets, i = 0;
+    while (n >= 1024 && i < unites.length - 1) { n /= 1024; i++; }
+    const txt = i === 0 ? String(n) : n.toFixed(n < 10 ? 1 : 0).replace('.', ',');
+    return txt + ' ' + unites[i];
+  };
+
+  u.debounce = function (fn, ms) {
+    let t;
+    return function () {
+      const args = arguments;
+      clearTimeout(t);
+      t = setTimeout(function () { fn.apply(null, args); }, ms);
+    };
+  };
+
+  u.uid = function (prefixe) {
+    let alea;
+    try { alea = crypto.randomUUID().replace(/-/g, '').slice(0, 16); }
+    catch (e) { alea = Date.now().toString(36) + Math.random().toString(36).slice(2, 10); }
+    return prefixe + '_' + alea;
+  };
+
+  /* ---------- Dates (format local, sans fuseau) ---------- */
+
+  u.MOIS = ['janvier', 'février', 'mars', 'avril', 'mai', 'juin', 'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'];
+  u.MOIS_COURT = ['janv.', 'févr.', 'mars', 'avr.', 'mai', 'juin', 'juil.', 'août', 'sept.', 'oct.', 'nov.', 'déc.'];
+  u.INITIALES_MOIS = ['J', 'F', 'M', 'A', 'M', 'J', 'J', 'A', 'S', 'O', 'N', 'D'];
+
+  u.pad = function (n) { return String(n).padStart(2, '0'); };
+
+  u.dateISO = function (d) {
+    d = d || new Date();
+    return d.getFullYear() + '-' + u.pad(d.getMonth() + 1) + '-' + u.pad(d.getDate());
+  };
+  u.heureHM = function (d) {
+    d = d || new Date();
+    return u.pad(d.getHours()) + ':' + u.pad(d.getMinutes());
+  };
+  u.moisActuel = function () { return new Date().getMonth() + 1; };
+
+  u.dateLongue = function (iso) {
+    if (!iso) return '';
+    const p = iso.split('-').map(Number);
+    return p[2] + ' ' + u.MOIS[p[1] - 1] + ' ' + p[0];
+  };
+  u.dateCourte = function (iso) {
+    if (!iso) return '';
+    const p = iso.split('-').map(Number);
+    const annee = p[0] !== new Date().getFullYear() ? ' ' + p[0] : '';
+    return p[2] + ' ' + u.MOIS_COURT[p[1] - 1] + annee;
+  };
+  u.jourSemaine = function (iso) {
+    const p = iso.split('-').map(Number);
+    return new Date(p[0], p[1] - 1, p[2]).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+  };
+  u.joursDepuis = function (horodatage) {
+    return Math.floor((Date.now() - horodatage) / 86400000);
+  };
+  u.depuis = function (horodatage) {
+    const j = u.joursDepuis(horodatage);
+    if (j <= 0) return "aujourd'hui";
+    if (j === 1) return 'hier';
+    return 'il y a ' + j + ' jours';
+  };
+
+  /* ---------- Réglages (stockés dans le navigateur) ---------- */
+
+  const CLE_PREFS = 'carnet-oiseaux:prefs';
+  let prefs = {};
+  try { prefs = JSON.parse(localStorage.getItem(CLE_PREFS)) || {}; } catch (e) { prefs = {}; }
+  App.prefs = {
+    get: function (cle, defaut) { return Object.prototype.hasOwnProperty.call(prefs, cle) ? prefs[cle] : defaut; },
+    set: function (cle, valeur) {
+      prefs[cle] = valeur;
+      try { localStorage.setItem(CLE_PREFS, JSON.stringify(prefs)); } catch (e) { /* stockage plein ou privé */ }
+    }
+  };
+
+  App.langue = function () { return App.prefs.get('langue', 'fr'); };
+  App.LANGUES = { fr: 'FR', bg: 'БГ', en: 'EN' };
+  App.collator = function (langue) {
+    try { return new Intl.Collator(langue || App.langue(), { sensitivity: 'base', ignorePunctuation: true }); }
+    catch (e) { return new Intl.Collator('fr'); }
+  };
+
+  /* ---------- Espèces ---------- */
+
+  const LISTE = window.ESPECES || [];
+  const PAR_ID = new Map();
+  LISTE.forEach(function (e, i) {
+    e.ordre = i;
+    e.tr = u.translit(e.bg);
+    e.index = u.norm([e.fr, e.en, e.la, e.bg, e.tr].join(' '));
+    PAR_ID.set(e.id, e);
+  });
+
+  App.esp = {
+    liste: LISTE,
+    // Renvoie l'espèce, ou une fiche de secours si elle a été retirée du catalogue
+    get: function (id) {
+      return PAR_ID.get(id) || {
+        id: id, fr: id, bg: id, en: id, la: '', tr: id, groupe: 'passereaux',
+        presence: [], mois: [], habitats: [], uicn: '', description: "Cette espèce n'est plus dans le catalogue (data/especes.js).",
+        inconnue: true, index: u.norm(id)
+      };
+    },
+    existe: function (id) { return PAR_ID.has(id); },
+    nom: function (e, langue) { return e[langue || App.langue()] || e.fr; },
+    autresNoms: function (e, langue) {
+      langue = langue || App.langue();
+      return ['fr', 'bg', 'en'].filter(function (l) { return l !== langue; }).map(function (l) { return e[l]; });
+    },
+    // Filtre de recherche : tous les mots tapés doivent apparaître dans un des noms
+    filtre: function (requete) {
+      const mots = u.norm(requete).split(' ').filter(Boolean);
+      if (!mots.length) return function () { return true; };
+      return function (e) { return mots.every(function (m) { return e.index.indexOf(m) !== -1; }); };
+    }
+  };
+
+  App.PRESENCES_COURT = { resident: 'Résident', estivant: 'Estivant', hivernant: 'Hivernant', passage: 'Passage' };
+
+  /* ---------- Listes du formulaire ---------- */
+
+  App.COMPORTEMENTS = [
+    ['pose', 'Posé'], ['vol', 'En vol'], ['chant', 'Chante'], ['cri', 'Crie'],
+    ['nourrit', 'Se nourrit'], ['chasse', 'Chasse'], ['parade', 'Parade'],
+    ['nid', 'Construit le nid'], ['nourrissage', 'Nourrit les jeunes'], ['juveniles', 'Juvéniles'],
+    ['bain', 'Se baigne'], ['groupe', 'En groupe'], ['migration', 'En migration']
+  ];
+  App.METEOS = [
+    ['soleil', 'Soleil', 'soleil'], ['nuageux', 'Nuageux', 'nuage'], ['pluie', 'Pluie', 'pluie'],
+    ['neige', 'Neige', 'neige'], ['brouillard', 'Brouillard', 'brouillard'], ['vent', 'Vent', 'vent']
+  ];
+  App.libelle = function (liste, id) {
+    const t = liste.find(function (x) { return x[0] === id; });
+    return t ? t[1] : id;
+  };
+})(window.App);
