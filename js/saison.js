@@ -1,30 +1,13 @@
 /* =====================================================================
    saison.js — page Saison : soleil et lune, arrivées et départs du mois,
-   mes cibles, premières observations de l'année.
-   + la petite ligne « du jour » en haut du catalogue.
+   premières observations de l'année.
+   + la petite ligne « du jour » en haut du catalogue, avec à côté
+     le bouton « Cibles » (la page Cibles est dans cibles.js).
    ===================================================================== */
 'use strict';
 
 (function (App) {
   const u = App.u;
-
-  /* ---------- Cibles : espèces que tu veux trouver ou photographier ---------- */
-  App.cibles = {
-    liste: function () { return App.prefs.get('cibles', []); },
-    contient: function (id) { return App.cibles.liste().indexOf(id) !== -1; },
-    basculer: function (id) {
-      const l = App.cibles.liste().slice();
-      const i = l.indexOf(id);
-      if (i === -1) l.push(id); else l.splice(i, 1);
-      App.prefs.set('cibles', l);
-      return i === -1;
-    },
-    fusionner: function (autres) {
-      const l = App.cibles.liste().slice();
-      (autres || []).forEach(function (id) { if (typeof id === 'string' && l.indexOf(id) === -1) l.push(id); });
-      App.prefs.set('cibles', l);
-    }
-  };
 
   /* ---------- Calendrier des retours (d'après les mois du catalogue) ---------- */
   const prec = function (m) { return m === 1 ? 12 : m - 1; };
@@ -53,7 +36,7 @@
     plage: plage
   };
 
-  /* ---------- Ligne « du jour » (catalogue) ---------- */
+  /* ---------- Ligne « du jour » (catalogue) + bouton « Cibles » à côté ---------- */
   App.saison.bandeauJour = async function () {
     const pos = await App.astro.position();
     const resume = await App.donnees.resume();
@@ -62,15 +45,17 @@
     const l = App.astro.lune(maintenant);
     const m = u.moisActuel();
     const arrivees = App.saison.arrivees(m).length;
-    const cibles = App.cibles.liste().filter(function (id) {
-      return App.esp.existe(id) && !resume.has(id) && App.esp.get(id).mois.indexOf(m) !== -1;
-    }).length;
-    return '<a class="jour" href="#/saison" aria-label="Saison : soleil, lune, arrivées et cibles">' +
+    const deSaison = App.cibles.deSaison(resume, m).length; // cibles à trouver, présentes ce mois-ci
+    return '<div class="jour-ligne">' +
+      '<a class="jour" href="#/saison" aria-label="Saison : soleil, lune, arrivées du mois">' +
       '<span>' + u.ic('soleil') + (s.lever ? App.astro.heure(s.lever[0]) + '–' + App.astro.heure(s.lever[1]) : '—') + '</span>' +
-      '<span>' + App.astro.luneSVG(l.phase, 16) + Math.round(l.eclairage * 100) + ' %</span>' +
-      (arrivees ? '<span>' + u.ic('feuille') + u.pluriel(arrivees, 'arrivée') + '</span>' : '') +
-      (cibles ? '<span title="Cibles en saison">' + u.ic('cible') + cibles + '</span>' : '') +
-      '<span class="jour-fleche">' + u.ic('droite') + '</span></a>';
+      '<span>' + App.astro.luneSVG(l.phase, 16) + '<span class="jour-pct">' + Math.round(l.eclairage * 100) + ' %</span></span>' +
+      // Sur téléphone, le mot « arrivées » et la flèche se cachent pour laisser la place au bouton Cibles
+      (arrivees ? '<span>' + u.ic('feuille') + arrivees + '<span class="jour-mot">&nbsp;' + (arrivees > 1 ? 'arrivées' : 'arrivée') + '</span></span>' : '') +
+      '<span class="jour-fleche">' + u.ic('droite') + '</span></a>' +
+      '<a class="jour jour-cibles" href="#/cibles" aria-label="Mes cibles' + (deSaison ? ' : ' + deSaison + ' de saison maintenant' : '') + '">' +
+      '<span class="cible-ic">' + u.ic('cible') + (deSaison ? '<b class="compte-cibles">' + deSaison + '</b>' : '') + '</span>Cibles</a>' +
+      '</div>';
   };
 
   /* ---------- Page Saison ---------- */
@@ -159,26 +144,6 @@
       const nomMois = u.MOIS[m - 1], nomMoisSuiv = u.MOIS[(m % 12)];
       const arrivees = App.saison.arrivees(m), departs = App.saison.departs(m), bientot = App.saison.arrivees((m % 12) + 1);
 
-      // Cibles
-      const cibles = App.cibles.liste().filter(App.esp.existe).map(App.esp.get);
-      const enSaison = cibles.filter(function (e) { return !resume.has(e.id) && e.mois.indexOf(m) !== -1; });
-      const horsSaison = cibles.filter(function (e) { return !resume.has(e.id) && e.mois.indexOf(m) === -1; });
-      const atteintes = cibles.filter(function (e) { return resume.has(e.id); });
-      const ligneCible = function (e, etat) {
-        const r = resume.get(e.id);
-        return '<li><a href="#/espece/' + encodeURIComponent(e.id) + '">' + App.ui.vignette(r && r.couverture, '', e.id) +
-          '<span class="ls-txt"><b>' + u.esc(App.esp.nom(e)) + '</b><small>' + u.esc(plage(e)) + ' · ' +
-          u.esc(e.habitats.map(function (h) { return window.HABITATS[h]; }).join(', ')) + '</small></span>' +
-          '<span class="droite">' + etat + '</span></a></li>';
-      };
-      const ciblesHtml = cibles.length
-        ? '<ul class="liste-simple">' +
-          enSaison.map(function (e) { return ligneCible(e, '<span class="tag tag-ok">en saison</span>'); }).join('') +
-          horsSaison.map(function (e) { return ligneCible(e, '<span class="tag">hors saison</span>'); }).join('') +
-          atteintes.map(function (e) { return ligneCible(e, '✓ ' + u.dateCourte(resume.get(e.id).premiere.date)); }).join('') +
-          '</ul>'
-        : '<p class="muet">Aucune cible pour l’instant. Sur la fiche d’une espèce, touche « Cible » pour l’ajouter ici : je te dirai quand c’est la saison.</p>';
-
       // Premières de l'année (plus récentes d'abord)
       const premieres = new Map();
       c.obs.slice().reverse().forEach(function (o) {
@@ -209,7 +174,6 @@
         '<h3 class="sous-titre">Dernières chances en ' + nomMois + '</h3>' + bandeMini(departs, resume, annee, 'Aucun départ prévu ce mois-ci.') +
         '<h3 class="sous-titre">Bientôt : arrivent en ' + nomMoisSuiv + '</h3>' + bandeMini(bientot, resume, annee, 'Pas d’arrivée prévue le mois prochain.') +
         '<p class="muet petit">D’après les mois de présence du catalogue. ✓ = déjà vue cette année.</p></section>' +
-        '<section class="section"><h2>' + u.ic('cible') + 'Mes cibles</h2>' + ciblesHtml + '</section>' +
         '<section class="section"><h2>Premières de ' + annee + '</h2>' + premieresHtml + '</section>' +
         '<p class="muet petit">Heures de Bulgarie, calculées pour ' + u.esc(pos.nom) + ' (' + pos.lat.toFixed(2).replace('.', ',') + ' N, ' +
         pos.lon.toFixed(2).replace('.', ',') + ' E), sans connexion.</p>';

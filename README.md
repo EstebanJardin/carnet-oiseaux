@@ -29,8 +29,10 @@ Android comme une vraie appli, et s'utilise aussi sur PC.
   fichier son. Les sons sont inclus dans les sauvegardes .zip.
 - **Saison** (ligne du jour en haut du catalogue) : lever et coucher du soleil, heures dorée
   et bleue, phase de la lune, arrivées et départs du mois, tes premières de l'année.
-- **Cibles** : sur la fiche d'une espèce, touche « Cible ». La page Saison te dit quand elle
-  est de saison, et l'appli te félicite quand tu l'observes enfin.
+- **Cibles** (bouton « Cibles » à côté de la ligne du jour, ou « Cible » sur la fiche d'une
+  espèce) : les espèces que tu veux trouver, rangées en « à chercher ce mois-ci », « plus tard »
+  et « trouvées », avec leurs habitats. La pastille du bouton compte celles de saison, et
+  l'appli te félicite quand tu en observes une.
 - **Carte à partager** : sur la fiche d'une espèce observée, « Partager » crée une jolie image
   (ta photo, les noms en 4 langues, le lieu, la date) pour WhatsApp, Instagram…
 
@@ -195,7 +197,8 @@ js/zip.js              création et lecture des .zip (sans librairie)
 js/astro.js            soleil et lune (calculs hors connexion)
 js/sons.js             enregistrement et lecture des chants
 js/partage.js          carte « Nouvelle espèce » à partager
-js/saison.js           page Saison, cibles, ligne du jour
+js/saison.js           page Saison, ligne du jour
+js/cibles.js           page Mes cibles
 js/sortie.js           mode sortie (comptage et bilan)
 js/catalogue.js        rubrique 1 : catalogue
 js/observations.js     rubrique 2 : formulaire et listes

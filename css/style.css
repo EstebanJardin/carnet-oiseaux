@@ -646,10 +646,11 @@ body[data-vue="ajouter"] .toast, body[data-vue="modifier"] .toast { bottom: calc
 .rond-charge { width: 20px; height: 20px; border: 3px solid currentColor; border-right-color: transparent; border-radius: 50%; animation: tourne .8s linear infinite; display: inline-block; }
 @keyframes tourne { to { transform: rotate(360deg); } }
 
-/* ---------- Ligne du jour (catalogue) et page Saison ---------- */
+/* ---------- Ligne du jour (catalogue) + bouton Cibles, page Saison ---------- */
+.jour-ligne { display: flex; gap: 8px; margin: 10px 0 2px; }
 .jour {
-  display: flex; align-items: center; gap: 14px;
-  margin: 10px 0 2px; padding: 8px 12px; min-height: 44px;
+  display: flex; align-items: center; gap: 14px; flex: 1 1 auto; min-width: 0;
+  padding: 8px 12px; min-height: 44px;
   border-radius: 14px; background: var(--carte); border: 1px solid var(--ligne);
   color: var(--encre-2); text-decoration: none; font-size: 14px; font-weight: 600;
   white-space: nowrap; overflow: hidden;
@@ -658,6 +659,29 @@ body[data-vue="ajouter"] .toast, body[data-vue="modifier"] .toast { bottom: calc
 .jour .ic { width: 18px; height: 18px; color: var(--vert-texte); }
 .jour .jour-fleche { margin-left: auto; }
 .jour .jour-fleche .ic { color: var(--encre-3); }
+.jour:active { background: var(--carte-2); }
+.jour.jour-cibles { flex: 0 0 auto; gap: 8px; color: var(--encre); }
+.jour-cibles .ic { color: var(--att); }
+.jour-cibles .cible-ic { position: relative; }
+/* Nombre de cibles de saison : petite pastille sur l'icône (ne prend pas de place) */
+.compte-cibles {
+  position: absolute; top: -8px; right: -9px;
+  display: inline-flex; align-items: center; justify-content: center;
+  min-width: 18px; height: 18px; padding: 0 4px; border-radius: 9px;
+  border: 2px solid var(--carte); background: var(--att); color: var(--carte);
+  font-size: 11px; line-height: 1; font-weight: 700;
+}
+/* Téléphones : la ligne du jour se resserre pour que les deux boutons tiennent côte à côte */
+@media (max-width: 479px) {
+  .jour { gap: 10px; padding: 8px 10px; }
+  .jour .jour-mot, .jour .jour-fleche { display: none; }
+}
+@media (max-width: 389px) {
+  .jour { gap: 8px; font-size: 13px; }
+}
+@media (max-width: 359px) {
+  .jour .jour-pct { display: none; } /* très petits écrans : la lune seule montre la phase */
+}
 .lune { display: inline-block; vertical-align: middle; color: var(--encre); flex: 0 0 auto; }
 .section > h2 .ic { width: 21px; height: 21px; color: var(--vert-texte); }
 .barre-soleil { position: relative; height: 18px; border-radius: 9px; margin: 4px 0; }
@@ -682,6 +706,15 @@ body[data-vue="ajouter"] .toast, body[data-vue="modifier"] .toast { bottom: calc
 /* ---------- Cibles et partage ---------- */
 .tag .ic { width: 13px; height: 13px; }
 .tag-cible { background: var(--att-bg); color: var(--att); }
+.barre-cibles { margin: 12px 0 0; }
+.liste-simple li.ligne-cible { display: flex; align-items: center; }
+.liste-simple li.ligne-cible > a { flex: 1 1 auto; min-width: 0; padding-right: 4px; }
+.ligne-cible .ls-txt small { display: block; line-height: 1.35; margin-top: 2px; }
+.ligne-cible .ls-txt .tag { font-size: 12.5px; }
+.ligne-cible .retirer { flex: 0 0 auto; width: 42px; height: 42px; margin-right: 6px; border-color: transparent; background: none; color: var(--encre-3); }
+.ligne-cible .retirer:hover { border-color: var(--ligne); }
+.ligne-cible .retirer .ic { width: 20px; height: 20px; }
+.vide .ic-vide { width: 84px; height: 84px; stroke-width: 1.4; color: color-mix(in srgb, var(--att) 55%, var(--bg)); }
 .puce-cible { margin-top: 10px; height: 40px; }
 .puce-cible.on, .puce-cible[aria-pressed="true"] { background: var(--att-bg); border-color: transparent; color: var(--att); }
 .actions-fiche { display: flex; gap: 10px; flex-wrap: wrap; margin: 14px 0; }
@@ -836,14 +869,15 @@ body[data-vue="sortie"] .toast { bottom: calc(96px + var(--safe-b)); }
   .nav a[data-vue="observations"] { order: 3; }
   .nav a[data-vue="sortie"] { order: 4; }
   .nav a[data-vue="saison"] { order: 5; }
-  .nav a[data-vue="stats"] { order: 6; }
-  .nav a[data-vue="sauvegarde"] { order: 7; }
+  .nav a[data-vue="cibles"] { order: 6; }
+  .nav a[data-vue="stats"] { order: 7; }
+  .nav a[data-vue="sauvegarde"] { order: 8; }
   body[data-vue="sortie"] .nav { display: flex; }
   body[data-vue="sortie"] .toast { bottom: 100px; }
   .pastille-sortie { bottom: 24px; left: calc(50% + var(--menu-l) / 2); }
   .bouton-sortie.flottant { display: none; } /* sur PC, « Sortie » est toujours dans le menu latéral */
   .liste-sortie { padding-bottom: 90px; max-width: 760px; }
-  .jour { max-width: 760px; }
+  .jour-ligne { max-width: 760px; }
 }
 
 @media (min-width: 1200px) {

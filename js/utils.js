@@ -9,7 +9,7 @@ window.App = window.App || {};
   App.u = u;
 
   // Version de l'appli (à faire correspondre avec VERSION dans sw.js)
-  App.VERSION = '1.2.1';
+  App.VERSION = '1.2.2';
 
   // Les vues (écrans) s'enregistrent ici ; app.js, chargé en dernier, les affiche
   App._vues = {};
@@ -145,6 +145,11 @@ window.App = window.App || {};
       try { localStorage.setItem(CLE_PREFS, JSON.stringify(prefs)); } catch (e) { /* stockage plein ou privé */ }
     }
   };
+  // Appli ouverte dans deux onglets (PC) : on reprend les réglages modifiés par l'autre onglet
+  window.addEventListener('storage', function (ev) {
+    if (ev.key !== CLE_PREFS) return;
+    try { prefs = JSON.parse(ev.newValue) || {}; } catch (e) { /* valeur illisible : on garde les nôtres */ }
+  });
 
   App.langue = function () { return App.prefs.get('langue', 'fr'); };
   App.LANGUES = { fr: 'FR', bg: 'БГ', en: 'EN' };

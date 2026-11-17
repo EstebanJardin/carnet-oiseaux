@@ -317,13 +317,17 @@
   /* =================================================================
      Choix de l'espèce (fenêtre avec recherche)
      ================================================================= */
-  async function choisirEspece() {
+  // opts.cibles : choix d'une cible (pas de « Observées récemment », cibles marquées 🎯)
+  // Aussi utilisée par la page Cibles (App.choisirEspece) → Promise<id ou null>
+  App.choisirEspece = choisirEspece;
+  async function choisirEspece(opts) {
+    opts = opts || {};
     const d = document.getElementById('dlg-espece');
     const resume = await App.donnees.resume();
     const langue = App.langue();
     const col = App.collator(langue);
     const toutes = App.esp.liste.slice().sort(function (a, b) { return col.compare(App.esp.nom(a, langue), App.esp.nom(b, langue)); });
-    const recentes = Array.from(resume.keys())
+    const recentes = opts.cibles ? [] : Array.from(resume.keys())
       .filter(App.esp.existe)
       .sort(function (a, b) { return App.donnees.cleObs(resume.get(b).derniere).localeCompare(App.donnees.cleObs(resume.get(a).derniere)); })
       .slice(0, 8)
@@ -341,7 +345,8 @@
     function option(e) {
       const r = resume.get(e.id);
       return '<button type="button" class="option-esp" data-id="' + u.esc(e.id) + '">' + App.ui.vignette(r && r.couverture, '', e.id) +
-        '<span class="oe-txt"><span class="oe-nom">' + u.esc(App.esp.nom(e, langue)) + (r ? ' <span class="tag tag-ok">✓</span>' : '') + '</span>' +
+        '<span class="oe-txt"><span class="oe-nom">' + u.esc(App.esp.nom(e, langue)) + (r ? ' <span class="tag tag-ok">✓</span>' : '') +
+        (opts.cibles && App.cibles.contient(e.id) ? ' <span class="tag tag-cible">' + u.ic('cible') + 'Cible</span>' : '') + '</span>' +
         '<span class="oe-autre" style="display:block">' + u.esc(App.esp.autresNoms(e, langue).join(' · ')) + ' · <i>' + u.esc(e.la) + '</i></span></span></button>';
     }
     function rendre() {

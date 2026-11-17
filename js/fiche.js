@@ -132,7 +132,8 @@
         boutonCible.innerHTML = u.ic('cible') + (ajoutee ? 'Dans mes cibles' : 'Cible');
         App.ui.toast(ajoutee
           ? (r ? 'Ajoutée à tes cibles (déjà observée)' : 'Ajoutée à tes cibles · en saison : ' + App.saison.plage(e))
-          : 'Retirée de tes cibles');
+          : 'Retirée de tes cibles',
+        ajoutee ? { action: 'Voir', surAction: function () { App.aller('#/cibles'); } } : null);
       });
       const boutonPartage = el.querySelector('[data-partager]');
       if (boutonPartage) boutonPartage.addEventListener('click', function () { App.partage.ouvrir(e.id); });

@@ -13,7 +13,7 @@
    fois. Chaque adresse porte une empreinte (?v=…, dans data/photos.js) :
    une photo remplacée sera retéléchargée automatiquement.
    ===================================================================== */
-const VERSION = 'v1.2.1';
+const VERSION = 'v1.2.2';
 const CACHE = 'carnet-oiseaux-' + VERSION;
 const CACHE_PHOTOS = 'carnet-oiseaux-photos';
 
@@ -38,6 +38,7 @@ const FICHIERS = [
   './js/fiche.js',
   './js/stats.js',
   './js/saison.js',
+  './js/cibles.js',
   './js/sortie.js',
   './js/sauvegarde.js',
   './js/app.js',
