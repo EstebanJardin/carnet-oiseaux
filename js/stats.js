@@ -121,7 +121,7 @@
             const r = resume.get(o.especeId);
             return '<li><a href="#/espece/' + encodeURIComponent(o.especeId) + '">' +
               '<span class="muet" style="min-width:26px;text-align:right;font-weight:700">' + (i + 1) + '</span>' +
-              App.ui.vignette(r && r.couverture) +
+              App.ui.vignette(r && r.couverture, '', o.especeId) +
               '<span class="ls-txt"><b>' + u.esc(App.esp.nom(e, langue)) + '</b><small>' + u.esc(o.lieu || '') + '</small></span>' +
               '<span class="droite">' + u.dateCourte(o.date) + '</span></a></li>';
           }).join('') + '</ul>';
@@ -163,7 +163,7 @@
         '<section class="section"><h2>Dernières espèces ajoutées</h2>' +
         '<ul class="liste-simple">' + nouvelles.map(function (x) {
           const e = App.esp.get(x.id);
-          return '<li><a href="#/espece/' + encodeURIComponent(x.id) + '">' + App.ui.vignette(x.r.couverture) +
+          return '<li><a href="#/espece/' + encodeURIComponent(x.id) + '">' + App.ui.vignette(x.r.couverture, '', x.id) +
             '<span class="ls-txt"><b>' + u.esc(App.esp.nom(e, langue)) + '</b><small>' + u.esc(window.GROUPES[e.groupe] || '') + '</small></span>' +
             '<span class="droite">1<sup>re</sup> obs.<br>' + u.dateCourte(x.r.premiere.date) + '</span></a></li>';
         }).join('') + '</ul></section>' +

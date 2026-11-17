@@ -14,6 +14,10 @@ Android comme une vraie appli, et s'utilise aussi sur PC.
 - **Statistiques** : progression, observations par mois, liste de l'année.
 - **Sauvegarde** : export .zip (avec les photos originales) ou .json, import et fusion sur
   un autre appareil, export CSV pour l'inventaire Smokinya, rappel tous les 14 jours.
+- **Photos de référence** : une photo libre (Wikimedia Commons) par espèce, disponible hors
+  connexion. Dès que tu photographies une espèce, **ta photo la remplace** ; la photo de
+  référence reste visible sur la fiche pour comparer. Les crédits (auteur, licence) sont
+  sur chaque fiche, dans Sauvegarde > À propos et dans `images/especes/CREDITS.md`.
 
 Tes observations et tes photos restent **sur ton appareil** (base IndexedDB du navigateur).
 Rien n'est envoyé sur Internet.
@@ -103,6 +107,15 @@ Tout est dans **`data/especes.js`**, modifiable avec n'importe quel éditeur de 
   un statut UICN incertain. Vérifie-les avec un guide de terrain bulgare ou auprès de la
   BSPB (Българско дружество за защита на птиците), puis retire le `aVerifier`.
 
+### Changer une photo de référence
+
+Les photos sont dans `images/especes/` : `<id>.jpg` (fiche, 640 px maximum) et
+`mini/<id>.jpg` (vignette carrée 160 × 160). Pour en changer une, remplace les deux
+fichiers et mets à jour son crédit (auteur, licence, source) dans `data/photos.js`.
+Change aussi sa petite empreinte `v:` (n'importe quelle nouvelle valeur) pour que les
+téléphones la retéléchargent. Choisis une photo **sous licence libre** (Wikimedia Commons)
+et cite toujours son auteur.
+
 ## 5. Mettre à jour l'appli
 
 Après **toute** modification (y compris `data/especes.js`) :
@@ -154,6 +167,8 @@ manifest.webmanifest   nom, icônes, couleurs (installation)
 sw.js                  service worker : fonctionnement hors connexion
 css/style.css          styles (thèmes clair et sombre, mobile et PC)
 data/especes.js        le catalogue des espèces
+data/photos.js         crédits des photos de référence
+images/especes/        photos de référence (fiche + mini/ vignettes, CREDITS.md)
 js/utils.js            outils (recherche, dates, réglages, espèces)
 js/db.js               base de données IndexedDB
 js/photos.js           compression, EXIF, téléchargement, visionneuse

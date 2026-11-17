@@ -339,6 +339,16 @@ body[data-vue="ajouter"] .nav, body[data-vue="modifier"] .nav { display: none; }
   background: color-mix(in srgb, var(--carte) 85%, transparent); border-color: transparent;
 }
 .fiche-couv .credit { position: absolute; right: 10px; bottom: 10px; font-size: 12px; padding: 3px 9px; border-radius: 99px; background: rgba(0, 0, 0, .5); color: #fff; }
+.fiche-couv .credit { max-width: calc(100% - 20px); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.credit-ref { font-size: 12.5px; line-height: 1.4; color: var(--encre-3); margin: 6px 0 0; }
+.credit-ref a { color: inherit; }
+.encart-ref { margin: 10px 0 0; }
+.encart-ref img { display: block; width: 100%; border-radius: 10px; margin-top: 8px; }
+.etiq-ref { font-size: 13px; font-weight: 700; color: var(--encre-2); }
+.credits-photos summary { cursor: pointer; font-weight: 600; padding: 6px 0; }
+.credits-photos ul { margin: 8px 0 0; padding-left: 18px; max-height: 50vh; overflow-y: auto; font-size: 13px; color: var(--encre-2); }
+.credits-photos li { margin: 3px 0; }
+.credits-photos a { color: inherit; }
 .fiche-titre { padding: 16px 0 4px; }
 .fiche-titre h1 { font-size: 30px; }
 .fiche-titre .latin { font-style: italic; color: var(--encre-2); font-size: 17px; margin-top: 4px; }

@@ -217,6 +217,18 @@
     }
   }
 
+  /* ---------- Crédits des photos de référence (exigés par les licences) ---------- */
+  function creditsPhotos() {
+    const refs = window.PHOTOS_REF || {};
+    const ids = App.esp.liste.map(function (e) { return e.id; }).filter(function (id) { return refs[id]; });
+    if (!ids.length) return '';
+    return '<details class="credits-photos"><summary>Crédits des photos de référence (' + ids.length + ')</summary>' +
+      '<p class="muet" style="margin:6px 0 0">Photos libres de Wikimedia Commons, réduites et recadrées pour l’appli. Merci aux photographes !</p>' +
+      '<ul>' + ids.map(function (id) {
+        return '<li><b>' + u.esc(App.esp.get(id).fr) + '</b> — ' + App.creditRef(App.photoRef(id)) + '</li>';
+      }).join('') + '</ul></details>';
+  }
+
   /* ---------- Écran ---------- */
   App.vue('sauvegarde', {
     afficher: async function (el) {
@@ -284,7 +296,8 @@
         '<p><b>Carnet d’oiseaux</b> · version ' + App.VERSION + '</p>' +
         '<p>Catalogue : ' + App.esp.liste.length + ' espèces de Bulgarie (Sredna Gora, plaines de Thrace), dont ' + nbVerif +
         ' avec une information à vérifier (badge « ? »). Le catalogue se corrige dans le fichier <code>data/especes.js</code>.</p>' +
-        '<p class="muet" style="margin:0">Statuts UICN : Liste rouge mondiale. Noms bulgares : à confirmer avec un guide local en cas de doute.</p>' +
+        '<p class="muet" style="margin:0 0 10px">Statuts UICN : Liste rouge mondiale. Noms bulgares : à confirmer avec un guide local en cas de doute.</p>' +
+        creditsPhotos() +
         '</div></section>';
 
       const etatExp = el.querySelector('#exp-etat');

@@ -24,15 +24,27 @@
       const m = u.moisActuel();
       const visibleMaintenant = e.mois.indexOf(m) !== -1;
       const couverture = r && r.couverture;
+      const ref = App.photoRef(e.id);
 
-      // Couverture : ta photo préférée (★) ou la plus récente
+      // Couverture : ta photo préférée (★) ou la plus récente ; sinon la photo de référence
       const couv = '<div class="fiche-couv">' +
         (couverture
           ? '<img src="' + App.photos.url(couverture, 'affichage') + '" alt="' + u.esc(App.esp.nom(e, langue)) + '" data-ph="' + couverture.id + '">' +
             '<span class="credit">' + (couverture.favori ? '★ ' : '') + 'Ta photo</span>'
-          : '<svg class="ph-oiseau" aria-hidden="true"><use href="#i-oiseau"/></svg>') +
+          : ref
+            ? '<img src="' + ref.grande + '" alt="' + u.esc(App.esp.nom(e, langue)) + ' (photo de référence)" style="cursor:default">' +
+              '<span class="credit">Photo de référence</span>'
+            : '<svg class="ph-oiseau" aria-hidden="true"><use href="#i-oiseau"/></svg>') +
         '<a class="btn-icone retour-flottant" href="#/catalogue" data-action="retour" aria-label="Retour">' + u.ic('retour') + '</a>' +
-        '</div>';
+        '</div>' +
+        (!couverture && ref ? '<p class="credit-ref">Photo : ' + App.creditRef(ref) + '</p>' : '');
+
+      // Avec ta propre photo : la photo de référence reste visible à côté, pour comparer
+      const encartRef = couverture && ref
+        ? '<figure class="encart encart-ref"><figcaption class="etiq-ref">Photo de référence</figcaption>' +
+          '<img src="' + ref.grande + '" alt="' + u.esc(App.esp.nom(e, langue)) + ' (photo de référence)" loading="lazy" decoding="async">' +
+          '<p class="credit-ref">' + App.creditRef(ref) + '</p></figure>'
+        : '';
 
       const tags = '<div class="tags">' +
         e.presence.map(function (p) { return '<span class="tag tag-' + p + '">' + window.PRESENCES[p] + '</span>'; }).join('') +
@@ -103,7 +115,7 @@
         '<p class="description" style="margin-top:14px">' + u.esc(e.description) + '</p>' +
         '<section class="section"><h2>Présence en Bulgarie</h2>' + calendrier + '</section>' +
         '</div>' +
-        '<aside class="fiche-cote">' + noms + statut + '</aside>' +
+        '<aside class="fiche-cote">' + noms + statut + encartRef + '</aside>' +
         '</div>' +
         '<section class="section" id="mes-obs"><h2>Mes observations</h2>' + mesObs + '</section>';
 

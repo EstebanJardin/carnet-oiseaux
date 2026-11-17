@@ -61,10 +61,17 @@
         '</header>';
     },
 
-    vignette: function (photo, cls) {
-      const img = photo && photo.miniature
-        ? '<img src="' + App.photos.url(photo, 'miniature') + '" alt="" loading="lazy" decoding="async">'
-        : '<svg class="ph-oiseau" aria-hidden="true"><use href="#i-oiseau"/></svg>';
+    // Ta photo en priorité, sinon la photo de référence de l'espèce, sinon la silhouette
+    vignette: function (photo, cls, especeId) {
+      let img;
+      if (photo && photo.miniature) {
+        img = '<img src="' + App.photos.url(photo, 'miniature') + '" alt="" loading="lazy" decoding="async">';
+      } else {
+        const ref = especeId ? App.photoRef(especeId) : null;
+        img = ref
+          ? '<img src="' + ref.mini + '" alt="" loading="lazy" decoding="async">'
+          : '<svg class="ph-oiseau" aria-hidden="true"><use href="#i-oiseau"/></svg>';
+      }
       return '<div class="vignette ' + (cls || '') + '">' + img + '</div>';
     },
 

@@ -9,7 +9,7 @@ window.App = window.App || {};
   App.u = u;
 
   // Version de l'appli (à faire correspondre avec VERSION dans sw.js)
-  App.VERSION = '1.0.0';
+  App.VERSION = '1.1.0';
 
   // Les vues (écrans) s'enregistrent ici ; app.js, chargé en dernier, les affiche
   App._vues = {};
@@ -189,6 +189,26 @@ window.App = window.App || {};
   };
 
   App.PRESENCES_COURT = { resident: 'Résident', estivant: 'Estivant', hivernant: 'Hivernant', passage: 'Passage' };
+
+  /* ---------- Photos de référence (Wikimedia Commons, data/photos.js) ---------- */
+
+  App.photoRef = function (id) {
+    const p = (window.PHOTOS_REF || {})[id];
+    if (!p) return null;
+    const v = p.v ? '?v=' + p.v : '';
+    return Object.assign({
+      grande: 'images/especes/' + id + '.jpg' + v,
+      mini: 'images/especes/mini/' + id + '.jpg' + v
+    }, p);
+  };
+
+  // « Auteur · Licence · Wikimedia Commons », avec liens (ouverts seulement si connecté)
+  App.creditRef = function (ref) {
+    const lien = function (href, texte) {
+      return href ? '<a href="' + u.esc(href) + '" target="_blank" rel="noopener">' + u.esc(texte) + '</a>' : u.esc(texte);
+    };
+    return u.esc(ref.auteur) + ' · ' + lien(ref.lienLicence, ref.licence) + ' · ' + lien(ref.source, 'Wikimedia Commons');
+  };
 
   /* ---------- Listes du formulaire ---------- */
 

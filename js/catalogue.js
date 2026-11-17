@@ -36,7 +36,7 @@
       return '<span class="tag tag-' + p + '">' + App.PRESENCES_COURT[p] + '</span>';
     }).join('') + (r ? '<span class="tag tag-ok">Observé ✓</span>' : '');
     return '<a class="carte-esp" href="#/espece/' + encodeURIComponent(e.id) + '">' +
-      App.ui.vignette(r && r.couverture) +
+      App.ui.vignette(r && r.couverture, '', e.id) +
       '<div class="carte-txt">' +
       '<div class="nom">' + u.esc(App.esp.nom(e, langue)) +
       (e.aVerifier ? '<span class="badge-verif" title="Information à vérifier">?</span>' : '') + '</div>' +

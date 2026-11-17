@@ -190,7 +190,7 @@
             const r = resume.get(id);
             const e = App.esp.get(id);
             return '<details class="acc-item" data-esp="' + u.esc(id) + '">' +
-              '<summary>' + App.ui.vignette(r.couverture) +
+              '<summary>' + App.ui.vignette(r.couverture, '', id) +
               '<div class="acc-txt"><div class="acc-nom">' + u.esc(App.esp.nom(e, langue)) + '</div>' +
               '<div class="acc-info">' + u.pluriel(r.nb, 'obs.', 'obs.') + ' · ' + u.pluriel(r.photos.length, 'photo') +
               ' · ' + u.dateCourte(r.derniere.date) + '</div></div>' +
@@ -305,7 +305,7 @@
 
     function option(e) {
       const r = resume.get(e.id);
-      return '<button type="button" class="option-esp" data-id="' + u.esc(e.id) + '">' + App.ui.vignette(r && r.couverture) +
+      return '<button type="button" class="option-esp" data-id="' + u.esc(e.id) + '">' + App.ui.vignette(r && r.couverture, '', e.id) +
         '<span class="oe-txt"><span class="oe-nom">' + u.esc(App.esp.nom(e, langue)) + (r ? ' <span class="tag tag-ok">✓</span>' : '') + '</span>' +
         '<span class="oe-autre" style="display:block">' + u.esc(App.esp.autresNoms(e, langue).join(' · ')) + ' · <i>' + u.esc(e.la) + '</i></span></span></button>';
     }
@@ -459,7 +459,7 @@
       const e = App.esp.get(etat.especeId);
       const r = resume.get(etat.especeId);
       b.classList.remove('vide-choix');
-      b.innerHTML = App.ui.vignette(r && r.couverture) +
+      b.innerHTML = App.ui.vignette(r && r.couverture, '', etat.especeId) +
         '<span class="ce-txt"><span class="ce-nom" style="display:block">' + u.esc(App.esp.nom(e, langue)) + '</span>' +
         '<span class="ce-autre" style="display:block">' + u.esc(App.esp.autresNoms(e, langue).join(' · ')) + '</span></span>' +
         '<span class="lien-btn">Changer</span>';
