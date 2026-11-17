@@ -703,7 +703,33 @@ body[data-vue="ajouter"] .toast, body[data-vue="modifier"] .toast { bottom: calc
 #f-micro.enregistre { background: var(--dang); border-color: var(--dang); color: var(--sur-dang); }
 
 /* ---------- Mode sortie ---------- */
-.lien-sortie { margin: 6px 0 8px; }
+:root { --sortie-bg: #B4561A; --sortie-txt: #FFFFFF; }
+:root[data-theme="dark"] { --sortie-bg: #E8955A; --sortie-txt: #1E1208; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --sortie-bg: #E8955A; --sortie-txt: #1E1208; } }
+.bouton-sortie {
+  flex: 0 0 auto; display: inline-flex; align-items: center; gap: 7px;
+  height: 46px; padding: 0 16px 0 12px; border-radius: 999px;
+  background: var(--sortie-bg); color: var(--sortie-txt);
+  font-weight: 800; font-size: 15px; text-decoration: none; white-space: nowrap;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, .18);
+}
+.bouton-sortie .ic { width: 21px; height: 21px; stroke-width: 2.4; }
+.bouton-sortie .point { width: 10px; height: 10px; border-radius: 50%; background: currentColor; animation: clignote 1.4s ease-in-out infinite; }
+.bouton-sortie.flottant {
+  position: fixed; z-index: 28; right: 16px; top: calc(10px + env(safe-area-inset-top, 0px));
+  box-shadow: 0 6px 18px rgba(0, 0, 0, .3);
+  opacity: 0; transform: translateY(-10px); pointer-events: none; transition: opacity .18s, transform .18s;
+}
+.bouton-sortie.flottant.visible { opacity: 1; transform: none; pointer-events: auto; }
+/* En-tête de « Mes observations » : le sous-titre passe sous le titre et les boutons */
+body[data-vue="observations"] .entete {
+  display: grid; grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas: "titre actions" "sous sous"; align-items: center;
+}
+body[data-vue="observations"] .entete-txt { display: contents; }
+body[data-vue="observations"] .entete h1 { grid-area: titre; overflow-wrap: normal; }
+body[data-vue="observations"] .entete .sous { grid-area: sous; }
+body[data-vue="observations"] .entete-actions { grid-area: actions; }
 body[data-vue="sortie"] .nav { display: none; }
 body[data-vue="sortie"] .toast { bottom: calc(96px + var(--safe-b)); }
 .sortie-totaux { display: flex; gap: 18px; font-size: 15px; color: var(--encre-2); margin: 0 0 2px; }
@@ -726,7 +752,7 @@ body[data-vue="sortie"] .toast { bottom: calc(96px + var(--safe-b)); }
   position: fixed; z-index: 35; left: 50%; transform: translateX(-50%);
   bottom: calc(var(--nav-h) + var(--safe-b) + 12px);
   display: inline-flex; align-items: center; gap: 8px; max-width: calc(100vw - 24px);
-  padding: 10px 16px; border-radius: 999px; background: var(--att); color: var(--att-bg);
+  padding: 10px 16px; border-radius: 999px; background: var(--sortie-bg); color: var(--sortie-txt);
   font-size: 14px; font-weight: 700; text-decoration: none; white-space: nowrap; box-shadow: var(--ombre);
 }
 .pastille-sortie .point { width: 9px; height: 9px; border-radius: 50%; background: currentColor; animation: clignote 1.4s ease-in-out infinite; }
@@ -737,6 +763,14 @@ body[data-vue="sortie"] .toast { bottom: calc(96px + var(--safe-b)); }
 @media (max-width: 420px) {
   .entete h1 { font-size: 24px; }
   .fiche-titre h1 { font-size: 27px; }
+  /* En-tête de « Mes observations » : titre + Sortie + FR + thème sur une ligne */
+  body[data-vue="observations"] .entete { column-gap: 8px; }
+  body[data-vue="observations"] .entete h1 { font-size: 20px; }
+  body[data-vue="observations"] .entete-actions { gap: 5px; }
+  body[data-vue="observations"] .entete-actions .btn-icone { width: 42px; height: 42px; }
+  body[data-vue="observations"] .entete-actions .outils-affichage { gap: 5px; }
+  .bouton-sortie { height: 42px; padding: 0 12px 0 9px; font-size: 14.5px; gap: 5px; }
+  .bouton-sortie .ic { width: 19px; height: 19px; }
 }
 
 /* ---------- Tablettes ---------- */
@@ -807,6 +841,7 @@ body[data-vue="sortie"] .toast { bottom: calc(96px + var(--safe-b)); }
   body[data-vue="sortie"] .nav { display: flex; }
   body[data-vue="sortie"] .toast { bottom: 100px; }
   .pastille-sortie { bottom: 24px; left: calc(50% + var(--menu-l) / 2); }
+  .bouton-sortie.flottant { display: none; } /* sur PC, « Sortie » est toujours dans le menu latéral */
   .liste-sortie { padding-bottom: 90px; max-width: 760px; }
   .jour { max-width: 760px; }
 }

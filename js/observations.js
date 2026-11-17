@@ -154,13 +154,35 @@
       let nbPhotos = 0;
       resume.forEach(function (r) { nbPhotos += r.photos.length; });
 
+      // Bouton « Sortie » bien visible en haut à droite (+ copie flottante quand on fait défiler)
+      const sortieEnCours = !!App.prefs.get('sortie', null);
+      const boutonSortie = function (cls) {
+        return '<a class="bouton-sortie' + (sortieEnCours ? ' en-cours' : '') + (cls ? ' ' + cls : '') + '" href="#/sortie"' +
+          (cls ? ' aria-hidden="true" tabindex="-1"' : '') + '>' +
+          (sortieEnCours ? '<span class="point" aria-hidden="true"></span>' : u.ic('chemin')) +
+          '<span>' + (sortieEnCours ? 'Reprendre' : 'Sortie') + '</span></a>';
+      };
+      function brancherFlottant() {
+        const tete = el.querySelector('.entete');
+        if (!tete || !('IntersectionObserver' in window)) return;
+        el.insertAdjacentHTML('beforeend', boutonSortie('flottant'));
+        const flottant = el.querySelector('.bouton-sortie.flottant');
+        const io = new IntersectionObserver(function (entrees) {
+          const visible = !entrees[0].isIntersecting;
+          flottant.classList.toggle('visible', visible);
+          if (visible) { flottant.removeAttribute('aria-hidden'); flottant.removeAttribute('tabindex'); }
+          else { flottant.setAttribute('aria-hidden', 'true'); flottant.setAttribute('tabindex', '-1'); }
+        });
+        io.observe(tete);
+        App.surNettoyage(function () { io.disconnect(); });
+      }
+
       if (!c.obs.length) {
-        el.innerHTML = App.ui.entete({ titre: 'Mes observations' }) +
+        el.innerHTML = App.ui.entete({ titre: 'Mes observations', actions: boutonSortie() }) +
           '<div class="vide"><svg class="ph-oiseau" aria-hidden="true"><use href="#i-oiseau"/></svg>' +
           '<h2>Ton carnet t’attend</h2>' +
           '<p>Ajoute ta première observation : l’espèce, le lieu, le nombre d’individus et tes photos.</p>' +
-          '<a class="btn btn-prim" href="#/ajouter">' + u.ic('plus') + 'Première observation</a>' +
-          '<p style="margin-top:14px"><a class="lien-btn" href="#/sortie">ou démarrer une sortie (comptage de plusieurs espèces)</a></p></div>';
+          '<a class="btn btn-prim" href="#/ajouter">' + u.ic('plus') + 'Première observation</a></div>';
         return;
       }
 
@@ -171,10 +193,9 @@
       el.innerHTML =
         App.ui.entete({
           titre: 'Mes observations',
-          sous: u.pluriel(resume.size, 'espèce') + ' · ' + u.pluriel(c.obs.length, 'observation') + ' · ' + u.pluriel(nbPhotos, 'photo')
+          sous: u.pluriel(resume.size, 'espèce') + ' · ' + u.pluriel(c.obs.length, 'observation') + ' · ' + u.pluriel(nbPhotos, 'photo'),
+          actions: boutonSortie()
         }) + rappel +
-        '<a class="btn btn-doux btn-bloc lien-sortie" href="#/sortie">' + u.ic('chemin') +
-        (App.prefs.get('sortie', null) ? 'Reprendre la sortie en cours' : 'Démarrer une sortie') + '</a>' +
         '<div class="outils-obs">' +
         '<div class="seg" role="group" aria-label="Type d’affichage">' +
         MODES.map(function (m) {
@@ -289,6 +310,7 @@
       });
 
       rendre();
+      brancherFlottant();
     }
   });
 
