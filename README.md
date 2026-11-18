@@ -31,6 +31,9 @@ Android comme une vraie appli, et s'utilise aussi sur PC.
 - **Filtres à choix multiples** (1.3.1) : dans le catalogue, les filtres Groupes, Habitats
   et Présence ouvrent une liste à cocher. Coche-en autant que tu veux (par exemple rapaces
   diurnes + rapaces nocturnes) : la liste se met à jour à chaque case.
+- **Catalogue vérifié** (1.3.2) : 21 noms bulgares alignés sur l'atlas de la BSPB, statuts
+  UICN confirmés. Il ne reste que 5 espèces « à vérifier », dont la présence autour de
+  Karlovo n'est pas confirmée.
 
 ### Nouveautés de la version 1.2
 
@@ -138,9 +141,12 @@ Si `description_en` ou `description_bg` manque, la fiche affiche la description 
 - `presence` : `resident`, `estivant`, `hivernant`, `passage` (on peut en mettre plusieurs).
 - `mois` : mois de présence habituelle (1 = janvier). Sert au filtre « visibles en ce moment ».
 - `uicn` : statut **mondial** de la Liste rouge (`LC`, `NT`, `VU`, `EN`, `CR`).
-- Les **15 espèces** marquées `aVerifier: true` ont un nom bulgare, une présence locale ou
-  un statut UICN incertain. Vérifie-les avec un guide de terrain bulgare ou auprès de la
-  BSPB (Българско дружество за защита на птиците), puis retire le `aVerifier`.
+- Les noms bulgares suivent l'atlas des oiseaux nicheurs de la BSPB (Българско дружество
+  за защита на птиците, [atlas.bspb.org](https://atlas.bspb.org)) et les statuts UICN ont
+  été vérifiés sur BirdLife DataZone (novembre 2026).
+- Les **5 espèces** encore marquées `aVerifier: true` vivent en Bulgarie, mais leur présence
+  autour de Karlovo n'est pas confirmée (le filtre « Infos à vérifier » du catalogue les
+  affiche). Si tu en observes une, garde une photo, puis retire le `aVerifier` et la note.
 
 ### Corriger une traduction
 

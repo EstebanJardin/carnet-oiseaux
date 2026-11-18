@@ -9,7 +9,7 @@ window.App = window.App || {};
   App.u = u;
 
   // Version de l'appli (à faire correspondre avec VERSION dans sw.js)
-  App.VERSION = '1.3.1';
+  App.VERSION = '1.3.2';
 
   // Les vues (écrans) s'enregistrent ici ; app.js, chargé en dernier, les affiche
   App._vues = {};

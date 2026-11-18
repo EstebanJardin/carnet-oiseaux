@@ -26,6 +26,14 @@
        sont marqués aVerifier: true avec une note, plutôt qu'inventés ;
      - les mois sont indicatifs (dates habituelles d'arrivée et de départ).
 
+   Vérifications (novembre 2026) :
+     - noms bulgares : atlas des oiseaux nicheurs de la BSPB
+       (atlas.bspb.org) et birdsinbulgaria.org ;
+     - statuts UICN : BirdLife DataZone (datazone.birdlife.org) ;
+     - présence : atlas BSPB 2013-2020. Les espèces encore marquées
+       aVerifier vivent en Bulgarie, mais leur présence autour de
+       Karlovo n'est pas confirmée.
+
    ⚠ Après une modification, augmente VERSION dans sw.js pour que ton
      téléphone télécharge la nouvelle version du catalogue.
    ===================================================================== */
@@ -170,9 +178,9 @@ window.ESPECES = [
     description_en: "Small vulture (55-65 cm), dirty white with black flight feathers, a bare yellow face and a wedge-shaped tail. In flight, a strongly contrasting black-and-white silhouette. Nests on cliffs; threatened by poisoning and power lines.",
     description_bg: "Малък лешояд (55-65 см), мръсно бял с черни махови пера, гола жълта глава и клиновидна опашка. В полет силуетът е силно контрастен, черно-бял. Гнезди по скали; застрашен е от отравяния и електропроводи.",
     aVerifier: true,
-    note: "Espèce très rare et en déclin en Bulgarie (surtout Rhodopes orientales) : présence près de Karlovo à confirmer.",
-    note_en: "Very rare and declining species in Bulgaria (mainly in the Eastern Rhodopes): presence near Karlovo to be confirmed.",
-    note_bg: "Много рядък и намаляващ вид в България (главно в Източните Родопи): присъствието край Карлово трябва да се потвърди."
+    note: "Très rare : 24 couples en Bulgarie en 2019, dont les trois quarts dans les Rhodopes orientales (atlas BSPB). Aucun site connu près de Karlovo : une observation ici serait exceptionnelle, à photographier et à signaler à la BSPB.",
+    note_en: "Very rare: 24 pairs in Bulgaria in 2019, three quarters of them in the Eastern Rhodopes (BSPB atlas). No known site near Karlovo: a sighting here would be exceptional, worth photographing and reporting to BSPB.",
+    note_bg: "Много рядък: 24 двойки в България през 2019 г., три четвърти от тях в Източните Родопи (атлас на БДЗП). Край Карлово няма известни находища: наблюдение тук би било изключително – струва си да се снима и да се съобщи на БДЗП."
   },
   {
     id: "circaete-jean-le-blanc",
@@ -255,9 +263,9 @@ window.ESPECES = [
     description_en: "Close to the Eurasian Sparrowhawk (30-37 cm) but with more pointed wings, the black tips of the primaries contrasting strongly with the pale underwing. The male is blue-grey with grey cheeks and a dark red eye. Nests in lowland forests and along rivers; migrates in flocks.",
     description_bg: "Прилича на малкия ястреб (30-37 см), но крилата са по-заострени, а черните върхове на първостепенните махови пера контрастират силно на светлата долна страна на крилото. Мъжкият е синкавосив със сиви бузи и тъмночервено око. Гнезди в равнинни гори и покрай реки; мигрира на ята.",
     aVerifier: true,
-    note: "Nicheur peu commun en Bulgarie, surtout en plaine : présence autour de Karlovo à confirmer.",
-    note_en: "Uncommon breeder in Bulgaria, mainly in the lowlands: presence around Karlovo to be confirmed.",
-    note_bg: "Сравнително рядък гнездящ вид в България, главно в равнините: присъствието около Карлово трябва да се потвърди."
+    note: "Niche surtout le long des grandes rivières (Danube, Maritsa, Toundja, Struma, Arda) et en Dobroudja : 200 à 340 couples en Bulgarie (atlas BSPB). À chercher le long de la Stryama et en migration ; présence près de Karlovo pas encore confirmée.",
+    note_en: "Breeds mainly along the large rivers (Danube, Maritsa, Tundzha, Struma, Arda) and in Dobrudzha: 200-340 pairs in Bulgaria (BSPB atlas). Worth looking for along the Stryama and on migration; presence near Karlovo not yet confirmed.",
+    note_bg: "Гнезди главно покрай големите реки (Дунав, Марица, Тунджа, Струма, Арда) и в Добруджа: 200–340 двойки в България (атлас на БДЗП). Може да се търси покрай Стряма и по време на прелета; присъствието край Карлово още не е потвърдено."
   },
   {
     id: "milan-noir",
@@ -288,7 +296,7 @@ window.ESPECES = [
   },
   {
     id: "balbuzard-pecheur",
-    fr: "Balbuzard pêcheur", bg: "Орел рибар", en: "Western Osprey", la: "Pandion haliaetus",
+    fr: "Balbuzard pêcheur", bg: "Речен орел", en: "Western Osprey", la: "Pandion haliaetus",
     groupe: "rapaces", presence: ["passage"], mois: [3, 4, 5, 8, 9, 10],
     habitats: ["eau"], uicn: "LC",
     description: "Rapace pêcheur (52-60 cm) blanc dessous et brun foncé dessus, avec un bandeau sombre sur l'œil. En vol, ailes longues coudées « en M ». Plonge pattes en avant pour attraper les poissons ; s'observe au passage sur les rivières et les retenues.",
@@ -306,20 +314,16 @@ window.ESPECES = [
   },
   {
     id: "faucon-kobez",
-    fr: "Faucon kobez", bg: "Вечерна ветрушка", en: "Red-footed Falcon", la: "Falco vespertinus",
+    fr: "Faucon kobez", bg: "Червенонога ветрушка", en: "Red-footed Falcon", la: "Falco vespertinus",
     groupe: "rapaces", presence: ["passage"], mois: [4, 5, 8, 9],
     habitats: ["champs"], uicn: "VU",
     description: "Petit faucon (28-34 cm) qui migre en groupes. Le mâle est gris ardoise avec les « culottes » et le dessous de la queue rouge brique ; la femelle a la tête et le dessous orangés et le dos gris barré. Chasse les insectes en vol, souvent perché sur les fils pendant le passage.",
     description_en: "Small falcon (28-34 cm) that migrates in flocks. The male is slate-grey with brick-red “trousers” and undertail; the female has an orange head and underparts and a barred grey back. Hunts insects in flight, often perching on wires during passage.",
-    description_bg: "Малък сокол (28-34 см), който мигрира на ята. Мъжкият е аспидносив с тухленочервени „гащи“ и подопашие; женската е с оранжеви глава и долна част на тялото и сив гръб на ивици. Лови насекоми в полет, като по време на прелета често каца по жиците.",
-    aVerifier: true,
-    note: "Statut UICN mondial à confirmer (VU ou NT selon les évaluations).",
-    note_en: "Global IUCN status to be confirmed (VU or NT depending on the assessment).",
-    note_bg: "Световният статус по IUCN трябва да се потвърди (VU или NT според оценките)."
+    description_bg: "Малък сокол (28-34 см), който мигрира на ята. Мъжкият е аспидносив с тухленочервени „гащи“ и подопашие; женската е с оранжеви глава и долна част на тялото и сив гръб на ивици. Лови насекоми в полет, като по време на прелета често каца по жиците."
   },
   {
     id: "faucon-hobereau",
-    fr: "Faucon hobereau", bg: "Орко", en: "Eurasian Hobby", la: "Falco subbuteo",
+    fr: "Faucon hobereau", bg: "Сокол орко", en: "Eurasian Hobby", la: "Falco subbuteo",
     groupe: "rapaces", presence: ["estivant", "passage"], mois: [4, 5, 6, 7, 8, 9, 10],
     habitats: ["foret", "eau", "champs"], uicn: "LC",
     description: "Faucon élancé (29-35 cm) aux ailes longues et pointues « en faux », comme un grand martinet. Moustaches noires sur joues blanches, dessous rayé et culottes rousses. Capture en vol libellules, hirondelles et martinets.",
@@ -357,7 +361,7 @@ window.ESPECES = [
   },
   {
     id: "faisan-de-colchide",
-    fr: "Faisan de Colchide", bg: "Обикновен фазан", en: "Common Pheasant", la: "Phasianus colchicus",
+    fr: "Faisan de Colchide", bg: "Колхидски фазан", en: "Common Pheasant", la: "Phasianus colchicus",
     groupe: "gallinaces", presence: ["resident"], mois: TOUTE_ANNEE,
     habitats: ["champs", "haies"], uicn: "LC",
     description: "Grand gallinacé à très longue queue (mâle 70-90 cm). Le mâle a la tête vert métallique, des caroncules rouges et le corps cuivré ; la femelle est brun-beige tachetée. Son « kok-kok » rauque, suivi d'un battement d'ailes, porte loin.",
@@ -413,7 +417,7 @@ window.ESPECES = [
   /* ---------- Pigeons, tourterelles, coucou ---------- */
   {
     id: "pigeon-biset",
-    fr: "Pigeon biset", bg: "Скален гълъб", en: "Rock Dove", la: "Columba livia",
+    fr: "Pigeon biset", bg: "Див скален гълъб", en: "Rock Dove", la: "Columba livia",
     groupe: "pigeons", presence: ["resident"], mois: TOUTE_ANNEE,
     habitats: ["village", "montagne"], uicn: "LC",
     description: "Ancêtre du pigeon domestique (31-34 cm) : gris-bleu avec deux barres noires sur l'aile, croupion blanc et reflets verts et pourpres au cou. Les pigeons des villages sont des formes domestiques aux couleurs très variées. Roucoulement grave « rou-rou-rou ».",
@@ -422,7 +426,7 @@ window.ESPECES = [
   },
   {
     id: "pigeon-colombin",
-    fr: "Pigeon colombin", bg: "Гълъб хралупар", en: "Stock Dove", la: "Columba oenas",
+    fr: "Pigeon colombin", bg: "Хралупар", en: "Stock Dove", la: "Columba oenas",
     groupe: "pigeons", presence: ["resident"], mois: TOUTE_ANNEE,
     habitats: ["foret", "champs"], uicn: "LC",
     description: "Pigeon gris-bleu (28-32 cm), plus petit et plus uni que le ramier, sans blanc au cou ni aux ailes, à l'œil sombre. Deux courtes barres noires sur l'aile et bord des ailes sombre en vol. Niche dans les cavités des vieux arbres ; chant « hou-ou » sourd et répété.",
@@ -440,7 +444,7 @@ window.ESPECES = [
   },
   {
     id: "tourterelle-des-bois",
-    fr: "Tourterelle des bois", bg: "Гургулица", en: "European Turtle Dove", la: "Streptopelia turtur",
+    fr: "Tourterelle des bois", bg: "Обикновена гургулица", en: "European Turtle Dove", la: "Streptopelia turtur",
     groupe: "pigeons", presence: ["estivant", "passage"], mois: [4, 5, 6, 7, 8, 9],
     habitats: ["haies", "champs"], uicn: "VU",
     description: "Petite tourterelle (26-28 cm) au manteau roux écaillé de noir, avec des stries noires et blanches sur le côté du cou. Ronronnement doux « tourr-tourr ». Espèce en fort déclin en Europe (chasse, disparition des haies).",
@@ -496,7 +500,7 @@ window.ESPECES = [
   },
   {
     id: "cheveche-d-athena",
-    fr: "Chevêche d'Athéna", bg: "Кукумявка", en: "Little Owl", la: "Athene noctua",
+    fr: "Chevêche d'Athéna", bg: "Обикновена кукумявка", en: "Little Owl", la: "Athene noctua",
     groupe: "nocturnes", presence: ["resident"], mois: TOUTE_ANNEE,
     habitats: ["village", "champs"], uicn: "LC",
     description: "Petite chouette trapue (21-23 cm), brune tachetée de blanc, aux yeux jaunes et aux sourcils blancs qui lui donnent un air sévère. Souvent visible de jour sur un toit ou un piquet, en hochant la tête. Cri plaintif « kiou » au crépuscule.",
@@ -523,7 +527,7 @@ window.ESPECES = [
   },
   {
     id: "engoulevent-d-europe",
-    fr: "Engoulevent d'Europe", bg: "Обикновен козодой", en: "European Nightjar", la: "Caprimulgus europaeus",
+    fr: "Engoulevent d'Europe", bg: "Козодой", en: "European Nightjar", la: "Caprimulgus europaeus",
     groupe: "divers", presence: ["estivant"], mois: [5, 6, 7, 8, 9],
     habitats: ["foret", "haies"], uicn: "LC",
     description: "Oiseau crépusculaire (26-28 cm) au plumage d'écorce, invisible le jour, posé dans l'axe d'une branche. Au crépuscule, le mâle émet pendant des minutes un ronronnement mécanique « errrrr ». En vol, le mâle montre des taches blanches aux ailes et à la queue.",
@@ -548,11 +552,7 @@ window.ESPECES = [
     habitats: ["montagne", "village"], uicn: "LC",
     description: "Grand martinet (20-22 cm) brun, au ventre et à la gorge blancs séparés par un collier brun. Vol puissant et très rapide au-dessus des falaises et des gorges. Cri : trille sonore et descendant.",
     description_en: "Large brown swift (20-22 cm) with a white belly and throat separated by a brown collar. Powerful, very fast flight over cliffs and gorges. Call: a loud, descending trill.",
-    description_bg: "Голям кафяв бързолет (20-22 см) с бели корем и гуша, разделени от кафява яка. Мощен и много бърз полет над скали и клисури. Зов: звучна, низходяща трел.",
-    aVerifier: true,
-    note: "Nom bulgare et présence locale (falaises du Balkan et de la Sredna Gora) à confirmer.",
-    note_en: "Bulgarian name and local presence (cliffs of the Balkan Mountains and Sredna Gora) to be confirmed.",
-    note_bg: "Българското име и местното присъствие (скалите на Стара планина и Средна гора) трябва да се потвърдят."
+    description_bg: "Голям кафяв бързолет (20-22 см) с бели корем и гуша, разделени от кафява яка. Мощен и много бърз полет над скали и клисури. Зов: звучна, низходяща трел."
   },
   {
     id: "martin-pecheur-d-europe",
@@ -639,7 +639,7 @@ window.ESPECES = [
   },
   {
     id: "pic-syriaque",
-    fr: "Pic syriaque", bg: "Сирийски пъстър кълвач", en: "Syrian Woodpecker", la: "Dendrocopos syriacus",
+    fr: "Pic syriaque", bg: "Сирийски кълвач", en: "Syrian Woodpecker", la: "Dendrocopos syriacus",
     groupe: "pics", presence: ["resident"], mois: TOUTE_ANNEE,
     habitats: ["village", "haies"], uicn: "LC",
     description: "Très proche du Pic épeiche (23-25 cm), mais sans la barre noire qui relie la moustache à la nuque (joue blanche « ouverte ») et avec le dessous de la queue rose pâle. Typique des villages, vergers et parcs de Bulgarie.",
@@ -662,11 +662,7 @@ window.ESPECES = [
     habitats: ["foret"], uicn: "LC",
     description: "Grand pic noir et blanc (24-26 cm) au bas du dos blanc, sans taches blanches aux épaules, aux ailes largement barrées de blanc et aux flancs striés ; calotte rouge chez le mâle. Vit dans les vieilles hêtraies riches en bois mort.",
     description_en: "Large black-and-white woodpecker (24-26 cm) with a white lower back, no white shoulder patches, broadly white-barred wings and streaked flanks; red crown in the male. Lives in old beech woods rich in dead wood.",
-    description_bg: "Голям черно-бял кълвач (24-26 см) с бяла долна част на гърба, без бели петна на раменете, с широки бели ивици по крилата и напетнени хълбоци; мъжкият е с червено теме. Живее в стари букови гори, богати на мъртва дървесина.",
-    aVerifier: true,
-    note: "Présence en Sredna Gora (vieilles hêtraies) à confirmer.",
-    note_en: "Presence in Sredna Gora (old beech woods) to be confirmed.",
-    note_bg: "Присъствието в Средна гора (стари букови гори) трябва да се потвърди."
+    description_bg: "Голям черно-бял кълвач (24-26 см) с бяла долна част на гърба, без бели петна на раменете, с широки бели ивици по крилата и напетнени хълбоци; мъжкият е с червено теме. Живее в стари букови гори, богати на мъртва дървесина."
   },
   {
     id: "pic-epeichette",
@@ -760,11 +756,7 @@ window.ESPECES = [
     habitats: ["champs", "eau"], uicn: "LC",
     description: "Petit pipit (14-15 cm) brun-olive strié, très semblable au Pipit des arbres mais plus grêle, aux flancs plus striés et à l'ongle arrière long. Cri fin « ist-ist » à l'envol. En hiver, en petites troupes dans les prés humides et les labours.",
     description_en: "Small streaked olive-brown pipit (14-15 cm), very like the Tree Pipit but slighter, with more streaked flanks and a long hind claw. Thin “ist-ist” call when flushed. In winter, in small flocks in wet meadows and ploughed fields.",
-    description_bg: "Малка маслиненокафява бъбрица на ивици (14-15 см), много подобна на горската бъбрица, но по-слаба, с по-напетнени хълбоци и дълъг заден нокът. Тънък зов „ист-ист“ при излитане. През зимата на малки ята във влажни ливади и изорани ниви.",
-    aVerifier: true,
-    note: "Statut UICN mondial à confirmer (classé NT en 2015, LC depuis ?).",
-    note_en: "Global IUCN status to be confirmed (listed NT in 2015, LC since then?).",
-    note_bg: "Световният статус по IUCN трябва да се потвърди (NT през 2015 г., LC след това?)."
+    description_bg: "Малка маслиненокафява бъбрица на ивици (14-15 см), много подобна на горската бъбрица, но по-слаба, с по-напетнени хълбоци и дълъг заден нокът. Тънък зов „ист-ист“ при излитане. През зимата на малки ята във влажни ливади и изорани ниви."
   },
   {
     id: "pipit-rousseline",
@@ -878,7 +870,7 @@ window.ESPECES = [
   },
   {
     id: "tarier-des-pres",
-    fr: "Tarier des prés", bg: "Ръждивогушо ливадно каменарче", en: "Whinchat", la: "Saxicola rubetra",
+    fr: "Tarier des prés", bg: "Ръждивогушо ливадарче", en: "Whinchat", la: "Saxicola rubetra",
     groupe: "grives", presence: ["passage"], mois: [4, 5, 8, 9],
     habitats: ["champs"], uicn: "LC",
     description: "Petit passereau (12-14 cm) brun strié à large sourcil blanc et poitrine orangée, avec du blanc à la base de la queue. Se perche bien en vue au sommet des hautes herbes et des clôtures. Surtout de passage en plaine ; niche dans les prairies de montagne.",
@@ -887,7 +879,7 @@ window.ESPECES = [
   },
   {
     id: "tarier-patre",
-    fr: "Tarier pâtre", bg: "Черногушо ливадно каменарче", en: "European Stonechat", la: "Saxicola rubicola",
+    fr: "Tarier pâtre", bg: "Черногушо ливадарче", en: "European Stonechat", la: "Saxicola rubicola",
     groupe: "grives", presence: ["estivant", "hivernant"], mois: TOUTE_ANNEE,
     habitats: ["champs", "haies"], uicn: "LC",
     description: "Petit passereau trapu (11,5-13 cm). Le mâle a la tête noire, un demi-collier blanc et la poitrine orange ; la femelle est plus brune. Se tient au sommet des buissons en lançant un « tsac-tsac » de cailloux heurtés. Friches et pâtures ; quelques-uns hivernent.",
@@ -905,16 +897,16 @@ window.ESPECES = [
   },
   {
     id: "monticole-de-roche",
-    fr: "Monticole de roche", bg: "Скален дрозд", en: "Common Rock Thrush", la: "Monticola saxatilis",
+    fr: "Monticole de roche", bg: "Пъстър скален дрозд", en: "Common Rock Thrush", la: "Monticola saxatilis",
     groupe: "grives", presence: ["estivant"], mois: [4, 5, 6, 7, 8, 9],
     habitats: ["montagne"], uicn: "LC",
     description: "Grive des pentes rocheuses (17-20 cm). Le mâle est superbe : tête bleu-gris, tache blanche sur le dos, poitrine et queue orange vif ; la femelle est brune et écaillée. Chante en vol ou depuis un rocher.",
     description_en: "Thrush of rocky slopes (17-20 cm). The male is superb: blue-grey head, white patch on the back, bright orange breast and tail; the female is brown and scaly. Sings in flight or from a rock.",
     description_bg: "Дрозд на скалистите склонове (17-20 см). Мъжкият е великолепен: синкавосива глава, бяло петно на гърба, яркооранжеви гърди и опашка; женската е кафява и на люспи. Пее в полет или от скала.",
     aVerifier: true,
-    note: "Présence dans les zones rocheuses de la Sredna Gora à confirmer.",
-    note_en: "Presence in the rocky areas of Sredna Gora to be confirmed.",
-    note_bg: "Присъствието в скалистите райони на Средна гора трябва да се потвърди."
+    note: "En fort déclin (plus de 85 % de recul, 278 à 590 couples en Bulgarie) : niche surtout dans le Balkan, dont le Balkan central au-dessus de Karlovo, et dans le massif Rila-Rhodopes (atlas BSPB). La Sredna Gora n'y est pas citée : à chercher plutôt sur les crêtes rocheuses du Balkan.",
+    note_en: "Sharply declining (down by more than 85%, 278-590 pairs in Bulgaria): breeds mainly in the Balkan Mountains, including the Central Balkan above Karlovo, and in the Rila-Rhodope massif (BSPB atlas). Sredna Gora is not mentioned: look for it on the rocky ridges of the Balkan instead.",
+    note_bg: "Силно намаляващ вид (спад с над 85 %, 278–590 двойки в България): гнезди главно в Стара планина, включително Централен Балкан над Карлово, и в Рило-Родопския масив (атлас на БДЗП). Средна гора не се споменава: по-скоро да се търси по скалистите била на Стара планина."
   },
   {
     id: "merle-noir",
@@ -950,11 +942,7 @@ window.ESPECES = [
     habitats: ["haies", "foret", "champs"], uicn: "LC",
     description: "Petite grive (19-23 cm) à large sourcil crème et aux flancs rouge-orangé. Hivernant du nord, souvent mêlée aux litornes dans les vergers et les haies à baies. Cri fin « tsiih » en vol de nuit.",
     description_en: "Small thrush (19-23 cm) with a broad creamy eyebrow and orange-red flanks. A winter visitor from the north, often mixed with Fieldfares in orchards and berry hedges. Thin “tseeh” call when migrating at night.",
-    description_bg: "Малък дрозд (19-23 см) с широка кремава вежда и червено-оранжеви хълбоци. Зимен гост от север, често заедно с хвойновите дроздове в овощните градини и живите плетове с плодове. Тънък зов „цийй“ при нощната миграция.",
-    aVerifier: true,
-    note: "Statut UICN mondial à confirmer (classée NT en 2015, LC depuis ?).",
-    note_en: "Global IUCN status to be confirmed (listed NT in 2015, LC since then?).",
-    note_bg: "Световният статус по IUCN трябва да се потвърди (NT през 2015 г., LC след това?)."
+    description_bg: "Малък дрозд (19-23 см) с широка кремава вежда и червено-оранжеви хълбоци. Зимен гост от север, често заедно с хвойновите дроздове в овощните градини и живите плетове с плодове. Тънък зов „цийй“ при нощната миграция."
   },
   {
     id: "grive-draine",
@@ -978,7 +966,7 @@ window.ESPECES = [
   },
   {
     id: "rousserolle-turdoide",
-    fr: "Rousserolle turdoïde", bg: "Голямо тръстиково шаварче", en: "Great Reed Warbler", la: "Acrocephalus arundinaceus",
+    fr: "Rousserolle turdoïde", bg: "Тръстиков дрозд", en: "Great Reed Warbler", la: "Acrocephalus arundinaceus",
     groupe: "fauvettes", presence: ["estivant"], mois: [4, 5, 6, 7, 8, 9],
     habitats: ["eau"], uicn: "LC",
     description: "Grosse fauvette des roseaux (16-20 cm), presque de la taille d'une grive, brun chaud avec un sourcil crème. Chant très sonore et grinçant « kara-kara-kiet-kiet », lancé du haut d'un roseau. Roselières des étangs et des rivières.",
@@ -992,11 +980,7 @@ window.ESPECES = [
     habitats: ["village", "haies", "eau"], uicn: "LC",
     description: "Petite fauvette (12-13,5 cm) gris-brun pâle très terne, au front plat et au bec assez long, qui agite la queue vers le bas. Chant rythmé et répétitif. Saules, jardins et vergers des villages.",
     description_en: "Small, very drab pale grey-brown warbler (12-13.5 cm) with a flat forehead and a fairly long bill, which flicks its tail downwards. Rhythmic, repetitive song. Willows, gardens and orchards in villages.",
-    description_bg: "Малък, много невзрачен бледо сивокафяв присмехулник (12-13,5 см) с плоско чело и доста дълга човка, който потрепва с опашка надолу. Ритмична, повтаряща се песен. Върби, градини и овощни градини в селата.",
-    aVerifier: true,
-    note: "Nom bulgare à confirmer.",
-    note_en: "Bulgarian name to be confirmed.",
-    note_bg: "Българското име трябва да се потвърди."
+    description_bg: "Малък, много невзрачен бледо сивокафяв присмехулник (12-13,5 см) с плоско чело и доста дълга човка, който потрепва с опашка надолу. Ритмична, повтаряща се песен. Върби, градини и овощни градини в селата."
   },
   {
     id: "fauvette-eperviere",
@@ -1027,7 +1011,7 @@ window.ESPECES = [
   },
   {
     id: "fauvette-a-tete-noire",
-    fr: "Fauvette à tête noire", bg: "Черноглаво коприварче", en: "Eurasian Blackcap", la: "Sylvia atricapilla",
+    fr: "Fauvette à tête noire", bg: "Голямо черноглаво коприварче", en: "Eurasian Blackcap", la: "Sylvia atricapilla",
     groupe: "fauvettes", presence: ["estivant", "passage"], mois: [3, 4, 5, 6, 7, 8, 9, 10],
     habitats: ["foret", "haies", "village"], uicn: "LC",
     description: "Fauvette grise (13-15 cm) à calotte noire chez le mâle, brun-roux chez la femelle. Chant mélodieux et flûté qui finit en phrase claire et forte. Forêts, parcs et jardins ; quelques individus passent l'hiver.",
@@ -1074,29 +1058,25 @@ window.ESPECES = [
   },
   {
     id: "gobemouche-nain",
-    fr: "Gobemouche nain", bg: "Малка мухоловка", en: "Red-breasted Flycatcher", la: "Ficedula parva",
+    fr: "Gobemouche nain", bg: "Червеногуша мухоловка", en: "Red-breasted Flycatcher", la: "Ficedula parva",
     groupe: "grives", presence: ["estivant", "passage"], mois: [5, 6, 7, 8, 9],
     habitats: ["foret"], uicn: "LC",
     description: "Tout petit gobemouche (11-12 cm) brun-gris qui relève souvent la queue, montrant des taches blanches à sa base. Le mâle adulte a la gorge orange-rouge. Discret, dans le feuillage des vieilles hêtraies ; chant tintant qui descend.",
     description_en: "Tiny grey-brown flycatcher (11-12 cm) that often cocks its tail, showing white patches at its base. The adult male has an orange-red throat. Unobtrusive, in the foliage of old beech woods; tinkling, descending song.",
     description_bg: "Съвсем малка сивокафява мухоловка (11-12 см), която често вдига опашката си и показва бели петна в основата ѝ. Възрастният мъжки има оранжевочервена гуша. Незабележима, в листака на старите букови гори; звънлива, низходяща песен.",
     aVerifier: true,
-    note: "Niche dans les hêtraies de montagne en Bulgarie ; présence en Sredna Gora à confirmer.",
-    note_en: "Breeds in mountain beech forests in Bulgaria; presence in Sredna Gora to be confirmed.",
-    note_bg: "Гнезди в планинските букови гори в България; присъствието в Средна гора трябва да се потвърди."
+    note: "Niche surtout dans la hêtraie du Balkan, juste au nord de Karlovo, avec quelques sites isolés ailleurs : 1 000 à 1 500 couples en Bulgarie (atlas BSPB). La Sredna Gora n'y est pas citée : possible en migration, nidification locale à confirmer.",
+    note_en: "Breeds mainly in the beech belt of the Balkan Mountains, just north of Karlovo, with a few isolated sites elsewhere: 1,000-1,500 pairs in Bulgaria (BSPB atlas). Sredna Gora is not mentioned: possible on migration, local breeding to be confirmed.",
+    note_bg: "Гнезди главно в буковия пояс на Стара планина, точно на север от Карлово, с отделни изолирани находища другаде: 1000–1500 двойки в България (атлас на БДЗП). Средна гора не се споменава: възможен по време на прелета, местното гнездене трябва да се потвърди."
   },
   {
     id: "gobemouche-a-demi-collier",
-    fr: "Gobemouche à demi-collier", bg: "Полуяка мухоловка", en: "Semi-collared Flycatcher", la: "Ficedula semitorquata",
+    fr: "Gobemouche à demi-collier", bg: "Полубеловрата мухоловка", en: "Semi-collared Flycatcher", la: "Ficedula semitorquata",
     groupe: "grives", presence: ["estivant", "passage"], mois: [4, 5, 6, 7, 8, 9],
     habitats: ["foret"], uicn: "LC",
     description: "Gobemouche noir et blanc (12-13,5 cm), spécialité des Balkans. Le mâle est intermédiaire entre le Gobemouche noir et le Gobemouche à collier : demi-collier blanc sur le côté du cou, beaucoup de blanc sur l'aile et une barre blanche en plus. Vieilles chênaies et hêtraies claires.",
     description_en: "Black-and-white flycatcher (12-13.5 cm), a Balkan speciality. The male is intermediate between the Pied and Collared Flycatchers: a white half-collar on the side of the neck, lots of white on the wing and an extra white wing bar. Old oak woods and open beech woods.",
-    description_bg: "Черно-бяла мухоловка (12-13,5 см), характерна за Балканите. Мъжкият е нещо средно между жалобната и беловратата мухоловка: бяла полуяка отстрани на шията, много бяло по крилото и една допълнителна бяла ивица. Стари дъбови гори и светли букови гори.",
-    aVerifier: true,
-    note: "Statut UICN à confirmer (anciennement NT).",
-    note_en: "IUCN status to be confirmed (formerly NT).",
-    note_bg: "Статусът по IUCN трябва да се потвърди (по-рано NT)."
+    description_bg: "Черно-бяла мухоловка (12-13,5 см), характерна за Балканите. Мъжкият е нещо средно между жалобната и беловратата мухоловка: бяла полуяка отстрани на шията, много бяло по крилото и една допълнителна бяла ивица. Стари дъбови гори и светли букови гори."
   },
   {
     id: "gobemouche-a-collier",
@@ -1147,16 +1127,12 @@ window.ESPECES = [
   },
   {
     id: "mesange-noire",
-    fr: "Mésange noire", bg: "Боров синигер", en: "Coal Tit", la: "Periparus ater",
+    fr: "Mésange noire", bg: "Черен синигер", en: "Coal Tit", la: "Periparus ater",
     groupe: "mesanges", presence: ["resident", "hivernant"], mois: TOUTE_ANNEE,
     habitats: ["foret"], uicn: "LC",
     description: "Petite mésange (10-11,5 cm) à tête noire et joues blanches, avec une tache blanche sur la nuque et deux barres blanches sur l'aile. Liée aux conifères, où elle cherche les graines au bout des rameaux. Chant rapide « tsiwi-tsiwi ».",
     description_en: "Small tit (10-11.5 cm) with a black head and white cheeks, a white patch on the nape and two white wing bars. Tied to conifers, where it searches for seeds at the tips of twigs. Fast “tsee-wee, tsee-wee” song.",
-    description_bg: "Малък синигер (10-11,5 см) с черна глава и бели бузи, с бяло петно на тила и две бели ивици на крилото. Свързан с иглолистните дървета, където търси семена по върховете на клонките. Бърза песен „ци-ви, ци-ви“.",
-    aVerifier: true,
-    note: "Nom bulgare à confirmer (Боров синигер ?) ; liée aux conifères, présence locale à vérifier.",
-    note_en: "Bulgarian name to be confirmed (Боров синигер?); tied to conifers, local presence to be checked.",
-    note_bg: "Българското име трябва да се потвърди (Боров синигер?); свързан с иглолистните дървета, местното присъствие трябва да се провери."
+    description_bg: "Малък синигер (10-11,5 см) с черна глава и бели бузи, с бяло петно на тила и две бели ивици на крилото. Свързан с иглолистните дървета, където търси семена по върховете на клонките. Бърза песен „ци-ви, ци-ви“."
   },
   {
     id: "mesange-bleue",
@@ -1194,27 +1170,27 @@ window.ESPECES = [
     description_en: "Grey bird (16-17 cm) with crimson wings spotted with white and a long, thin, curved bill, which climbs rock faces flicking its wings open like a butterfly. Sometimes winters on cliffs, in gorges and on old buildings at low altitude. A “star” for photographers.",
     description_bg: "Сива птица (16-17 см) с карминеночервени крила на бели петна и дълга, тънка, извита човка, която се катери по скалните стени, като разтваря крилата си като пеперуда. Понякога зимува по скалите, в ждреловете и по старите сгради в ниските части. Истинска „звезда“ за фотографите.",
     aVerifier: true,
-    note: "Niche en haute montagne ; présence hivernale sur les falaises et carrières des environs à confirmer.",
-    note_en: "Breeds high in the mountains; winter presence on local cliffs and quarries to be confirmed.",
-    note_bg: "Гнезди високо в планините; зимното присъствие по скалите и кариерите наоколо трябва да се потвърди."
+    note: "Niche sur les parois rocheuses du massif Rila-Rhodopes et du Balkan central, la chaîne au-dessus de Karlovo : 300 à 500 couples en Bulgarie (atlas BSPB). En hiver il descend plus bas : sa présence sur les falaises, gorges et carrières des environs reste à confirmer.",
+    note_en: "Breeds on the rock faces of the Rila-Rhodope massif and the Central Balkan, the range above Karlovo: 300-500 pairs in Bulgaria (BSPB atlas). In winter it moves lower down: its presence on nearby cliffs, gorges and quarries is still to be confirmed.",
+    note_bg: "Гнезди по скалните стени на Рило-Родопския масив и Централна Стара планина – планината над Карлово: 300–500 двойки в България (атлас на БДЗП). През зимата слиза по-ниско: присъствието му по скалите, ждреловете и кариерите наоколо тепърва трябва да се потвърди."
   },
   {
     id: "grimpereau-des-bois",
-    fr: "Grimpereau des bois", bg: "Дългопръста дърволазка", en: "Eurasian Treecreeper", la: "Certhia familiaris",
+    fr: "Grimpereau des bois", bg: "Горска дърволазка", en: "Eurasian Treecreeper", la: "Certhia familiaris",
     groupe: "mesanges", presence: ["resident"], mois: TOUTE_ANNEE,
     habitats: ["foret"], uicn: "LC",
     description: "Petit passereau (12,5 cm) brun strié dessus, blanc pur dessous, au bec fin arqué, qui grimpe en spirale le long des troncs. Très proche du Grimpereau des jardins : flancs plus blancs, sourcil plus net et chant différent. Plutôt dans les forêts de montagne (hêtraies, conifères).",
     description_en: "Small songbird (12.5 cm), streaked brown above and pure white below, with a thin curved bill, which spirals up tree trunks. Very similar to the Short-toed Treecreeper: whiter flanks, a cleaner eyebrow and a different song. Mostly in mountain forests (beech, conifers).",
-    description_bg: "Малка пойна птица (12,5 см), кафява на ивици отгоре и чисто бяла отдолу, с тънка извита човка, която се изкачва спираловидно по стволовете. Много прилича на късопръстата дърволазка: по-бели хълбоци, по-ясна вежда и различна песен. Предимно в планинските гори (букови, иглолистни)."
+    description_bg: "Малка пойна птица (12,5 см), кафява на ивици отгоре и чисто бяла отдолу, с тънка извита човка, която се изкачва спираловидно по стволовете. Много прилича на градинската дърволазка: по-бели хълбоци, по-ясна вежда и различна песен. Предимно в планинските гори (букови, иглолистни)."
   },
   {
     id: "grimpereau-des-jardins",
-    fr: "Grimpereau des jardins", bg: "Късопръста дърволазка", en: "Short-toed Treecreeper", la: "Certhia brachydactyla",
+    fr: "Grimpereau des jardins", bg: "Градинска дърволазка", en: "Short-toed Treecreeper", la: "Certhia brachydactyla",
     groupe: "mesanges", presence: ["resident"], mois: TOUTE_ANNEE,
     habitats: ["foret", "village", "haies"], uicn: "LC",
     description: "Grimpereau (12,5 cm) presque identique au Grimpereau des bois, aux flancs un peu plus brunâtres et au bec plus long. Le meilleur critère est son chant, court et rythmé « ti-ti-titero-tit ». Forêts de feuillus de basse altitude, parcs et vergers.",
     description_en: "Treecreeper (12.5 cm) almost identical to the Eurasian Treecreeper, with slightly browner flanks and a longer bill. The best clue is its short, rhythmic song “tee-tee-teeteroo-tit”. Lowland broadleaved woods, parks and orchards.",
-    description_bg: "Дърволазка (12,5 см), почти еднаква с дългопръстата, с малко по-кафеникави хълбоци и по-дълга човка. Най-сигурният белег е песента ѝ, кратка и ритмична: „ти-ти-титеро-тит“. Широколистни гори в ниските части, паркове и овощни градини."
+    description_bg: "Дърволазка (12,5 см), почти еднаква с горската, с малко по-кафеникави хълбоци и по-дълга човка. Най-сигурният белег е песента ѝ, кратка и ритмична: „ти-ти-титеро-тит“. Широколистни гори в ниските части, паркове и овощни градини."
   },
 
   /* ---------- Loriot et pies-grièches ---------- */
@@ -1252,11 +1228,7 @@ window.ESPECES = [
     habitats: ["champs", "haies"], uicn: "LC",
     description: "Grande pie-grièche (24-25 cm) gris clair dessus et blanche dessous, avec un masque noir qui ne passe pas sur le front et une longue queue. Hivernant solitaire, perché bien en vue au sommet d'un arbre isolé ; chasse campagnols et petits oiseaux.",
     description_en: "Large shrike (24-25 cm), pale grey above and white below, with a black mask that does not extend over the forehead and a long tail. A solitary winter visitor, perched in full view on top of a lone tree; hunts voles and small birds.",
-    description_bg: "Едра сврачка (24-25 см), светлосива отгоре и бяла отдолу, с черна маска, която не минава през челото, и дълга опашка. Самотен зимуващ вид, кацнал на видно място на върха на самотно дърво; лови полевки и дребни птици.",
-    aVerifier: true,
-    note: "Nom bulgare à confirmer (Сива сврачка ou Голяма сива сврачка).",
-    note_en: "Bulgarian name to be confirmed (Сива сврачка or Голяма сива сврачка).",
-    note_bg: "Българското име трябва да се потвърди (Сива сврачка или Голяма сива сврачка)."
+    description_bg: "Едра сврачка (24-25 см), светлосива отгоре и бяла отдолу, с черна маска, която не минава през челото, и дълга опашка. Самотен зимуващ вид, кацнал на видно място на върха на самотно дърво; лови полевки и дребни птици."
   },
 
   /* ---------- Corvidés ---------- */
@@ -1307,7 +1279,7 @@ window.ESPECES = [
   },
   {
     id: "grand-corbeau",
-    fr: "Grand Corbeau", bg: "Гарван гробар", en: "Northern Raven", la: "Corvus corax",
+    fr: "Grand Corbeau", bg: "Гарван", en: "Northern Raven", la: "Corvus corax",
     groupe: "corvides", presence: ["resident"], mois: TOUTE_ANNEE,
     habitats: ["montagne", "foret", "champs"], uicn: "LC",
     description: "Le plus grand passereau (54-67 cm), entièrement noir, au bec massif, à la gorge hérissée et à la queue en losange en vol. Cri grave et sonore « krok ». Vit en couples en montagne et fait des acrobaties aériennes au printemps.",
@@ -1471,11 +1443,7 @@ window.ESPECES = [
     habitats: ["montagne", "haies"], uicn: "LC",
     description: "Bruant (15-16,5 cm) à la tête gris clair rayée de noir, au ventre roux-orangé uni et au croupion roux. Discret sur les pentes rocheuses buissonnantes, dans les vignes et les lisières ensoleillées. Cri fin « tsi ».",
     description_en: "Bunting (15-16.5 cm) with a pale grey head striped with black, plain orange-rufous underparts and a rufous rump. Unobtrusive on scrubby rocky slopes, in vineyards and on sunny woodland edges. Thin “tsee” call.",
-    description_bg: "Овесарка (15-16,5 см) със светлосива глава на черни ивици, едноцветен ръждивооранжев корем и ръждив кръст. Незабележима по храсталачните скалисти склонове, в лозята и слънчевите горски покрайнини. Тънък зов „ци“.",
-    aVerifier: true,
-    note: "Nom bulgare à confirmer (Сивоглава овесарка ou Планинска овесарка ?).",
-    note_en: "Bulgarian name to be confirmed (Сивоглава овесарка or Планинска овесарка?).",
-    note_bg: "Българското име трябва да се потвърди (Сивоглава овесарка или Планинска овесарка?)."
+    description_bg: "Овесарка (15-16,5 см) със светлосива глава на черни ивици, едноцветен ръждивооранжев корем и ръждив кръст. Незабележима по храсталачните скалисти склонове, в лозята и слънчевите горски покрайнини. Тънък зов „ци“."
   },
   {
     id: "bruant-ortolan",
