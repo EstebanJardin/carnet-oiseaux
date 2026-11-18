@@ -248,6 +248,26 @@ body[data-vue="ajouter"] .nav, body[data-vue="modifier"] .nav { display: none; }
 .puce-sel .ic { position: absolute; right: 13px; top: 50%; width: 16px; height: 16px; transform: translateY(-50%); pointer-events: none; color: var(--encre-3); }
 .puce-sel.on select { background: var(--vert); border-color: var(--vert); color: var(--sur-vert); }
 .puce-sel.on .ic { color: var(--sur-vert); }
+/* Filtre à choix multiples : la puce ouvre une liste à cocher */
+.puce-multi { padding: 0 13px 0 15px; max-width: 250px; }
+.puce-multi .puce-lbl { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.puce-multi .puce-plus { flex: 0 0 auto; padding: 1px 7px; border-radius: 999px; font-size: 13px; background: var(--vert-pale); color: var(--vert-texte); }
+.puce-multi.on .puce-plus { background: color-mix(in srgb, var(--sur-vert) 24%, transparent); color: var(--sur-vert); }
+.puce-multi .ic { flex: 0 0 auto; width: 16px; height: 16px; color: var(--encre-3); }
+.puce-multi.on .ic { color: var(--sur-vert); }
+.dlg-confirm[open]:has(.dlg-multi) { display: flex; flex-direction: column; overflow: hidden; max-height: calc(100vh - 32px); max-height: calc(100dvh - 32px); }
+.dlg-multi { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; }
+.dlg-multi h2 { margin-bottom: 10px; }
+.choix-liste { flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; margin: 0 -10px 16px; }
+.choix { display: flex; align-items: center; gap: 12px; min-height: 48px; padding: 4px 10px; border-radius: 12px; cursor: pointer; }
+.choix:hover { background: var(--carte-2); }
+.choix:has(input:checked) { background: var(--vert-pale); }
+.choix input { flex: 0 0 auto; width: 22px; height: 22px; margin: 0; accent-color: var(--vert); }
+.choix-txt { flex: 1 1 auto; min-width: 0; font-weight: 600; }
+.choix-n { flex: 0 0 auto; color: var(--encre-3); font-size: 14px; font-variant-numeric: tabular-nums; }
+.dlg-multi .dlg-actions { flex-wrap: nowrap; }
+.dlg-multi .dlg-actions .btn-second { flex: 0 0 auto; padding: 0 16px; }
+.dlg-multi .dlg-actions .btn-prim { flex: 1 1 0; min-width: 0; padding: 0 12px; }
 .resultat { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin: 6px 2px 10px; font-size: 14px; color: var(--encre-3); min-height: 36px; }
 
 /* ---------- Progression ---------- */

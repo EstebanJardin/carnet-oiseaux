@@ -6,7 +6,8 @@ Android comme une vraie appli, et s'utilise aussi sur PC.
 
 - **Catalogue** de 147 espèces (noms français, bulgare, anglais, latin), avec la recherche
   sans accents (même en bulgare translittéré : « kos » trouve « Кос ») et des filtres :
-  groupe, habitat, présence, « visibles en ce moment ».
+  groupe, habitat, présence (plusieurs choix à la fois, par exemple rapaces diurnes +
+  rapaces nocturnes), « visibles en ce moment ».
 - **Observations** : espèce, date et heure, lieu + GPS, nombre, comportement, météo, notes
   et photos. La date et la position sont reprises des infos EXIF de la photo.
 - **Fiche par espèce** : infos du catalogue, chronologie, photos, premières et dernières
@@ -27,6 +28,9 @@ Android comme une vraie appli, et s'utilise aussi sur PC.
   celle choisie en premier. Tes propres textes (lieux, notes) ne sont jamais traduits.
 - **Export CSV** : les titres des colonnes et les libellés (groupe, comportement, météo)
   suivent la langue de l'appli.
+- **Filtres à choix multiples** (1.3.1) : dans le catalogue, les filtres Groupes, Habitats
+  et Présence ouvrent une liste à cocher. Coche-en autant que tu veux (par exemple rapaces
+  diurnes + rapaces nocturnes) : la liste se met à jour à chaque case.
 
 ### Nouveautés de la version 1.2
 

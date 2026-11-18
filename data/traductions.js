@@ -158,6 +158,8 @@ window.TRADUCTIONS = {
   "Tous les groupes": ["All groups", "Всички групи"],
   "Tous les habitats": ["All habitats", "Всички местообитания"],
   "Toutes les présences": ["Any status", "Всякакъв статус"],
+  "Groupes": ["Groups", "Групи"],
+  "Voir {especes}": ["Show {especes}", "Покажи {especes}"],
   "Déjà observées": ["Already seen", "Вече видени"],
   "Pas encore vues": ["Not seen yet", "Още невидени"],
   "Infos à vérifier": ["Info to check", "За проверка"],
