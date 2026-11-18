@@ -914,3 +914,58 @@ body[data-vue="sortie"] .toast { bottom: calc(96px + var(--safe-b)); }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { transition: none !important; animation: none !important; scroll-behavior: auto !important; }
 }
+
+/* ---------- Mes spots et perchoirs (v1.4.0) ---------- */
+/* Fiche espèce : Mes observations | Mes spots */
+.seg-fiche { display: flex; width: 100%; max-width: 520px; margin-bottom: 16px; }
+.seg-fiche button { flex: 1 1 0; min-width: 0; justify-content: center; min-height: 48px; padding: 0 10px; font-size: 15.5px; }
+.seg-fiche button .ic { flex: 0 0 auto; }
+.compte-btn { display: inline-flex; align-items: center; justify-content: center; min-width: 22px; height: 22px; padding: 0 6px; border-radius: 999px; background: var(--vert-pale); color: var(--vert-texte); font-size: 12.5px; font-weight: 700; }
+.perchoirs .perch-haut { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 6px; }
+.perchoirs h3 { font-size: 17px; margin: 0; display: flex; align-items: center; gap: 8px; }
+.perchoirs h3 .ic { width: 19px; height: 19px; color: var(--vert-texte); }
+.perchoirs p { margin: 0; }
+.perchoirs textarea { min-height: 100px; margin-top: 4px; }
+.spot-texte { white-space: pre-wrap; overflow-wrap: anywhere; margin: 0; }
+.lien-spot { color: inherit; font-weight: 600; text-decoration: underline; text-underline-offset: 3px; text-decoration-color: color-mix(in srgb, currentColor 40%, transparent); }
+.facultatif { font-weight: 500; font-size: 13.5px; }
+/* Liste et page d'un spot */
+.vignette-spot { display: flex; align-items: center; justify-content: center; background: var(--vert-pale); color: var(--vert-texte); }
+.vignette-spot .ic { width: 22px; height: 22px; }
+.vide .ic-vide-spot { color: color-mix(in srgb, var(--vert) 45%, var(--bg)); }
+.entete .sous .ic { width: 16px; height: 16px; vertical-align: -3px; margin-right: 5px; }
+.spot-page { max-width: 760px; }
+.spot-photo { display: block; width: 100%; padding: 0; margin: 4px 0 14px; border: 0; border-radius: var(--r); overflow: hidden; background: var(--bg-2); cursor: zoom-in; }
+.spot-photo img { display: block; width: 100%; max-height: 52vh; object-fit: cover; }
+.spot-position p { margin: 0 0 6px; display: flex; align-items: center; gap: 8px; }
+.spot-position .ic { width: 18px; height: 18px; flex: 0 0 auto; color: var(--encre-3); }
+.spot-trajet { font-weight: 700; color: var(--vert-texte); }
+.spot-trajet:empty { display: none; }
+.spot-trajet .ic { color: var(--vert-texte); }
+.spot-position .actions-fiche { margin: 10px 0 8px; }
+.spot-position .btn .ic { color: inherit; }
+.spot-position .aide { display: block; margin: 0; font-size: 13.5px; color: var(--encre-3); }
+.bande-heures { display: grid; grid-template-columns: repeat(24, minmax(0, 1fr)); gap: 2px; margin-top: 12px; }
+.bande-heures span { height: 22px; border-radius: 3px; background: var(--bg-2); }
+.bande-heures .n1 { background: color-mix(in srgb, var(--vert) 32%, var(--bg-2)); }
+.bande-heures .n2 { background: color-mix(in srgb, var(--vert) 55%, var(--bg-2)); }
+.bande-heures .n3 { background: color-mix(in srgb, var(--vert) 78%, var(--bg-2)); }
+.bande-heures .n4 { background: var(--vert); }
+.bande-heures-axe { display: flex; justify-content: space-between; margin: 3px 0 8px; font-size: 12px; color: var(--encre-3); font-variant-numeric: tabular-nums; }
+/* Fenêtre « Nouveau spot » : le contenu défile, les boutons restent visibles */
+.dlg-confirm:has(.dlg-spot) { width: min(94vw, 520px); }
+.dlg-confirm[open]:has(.dlg-spot) { display: flex; flex-direction: column; overflow: hidden; max-height: calc(100vh - 32px); max-height: calc(100dvh - 32px); }
+.dlg-spot { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; }
+.dlg-spot .dlg-corps { flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; display: flex; flex-direction: column; gap: 16px; margin: 0 -22px 16px; padding: 4px 22px; }
+.dlg-spot textarea { min-height: 84px; }
+.dlg-spot .puces .puce { height: 42px; }
+.sp-photo { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
+.sp-photo .photo-form { width: 96px; flex: 0 0 auto; }
+.visio-bas.sans-fiche .visio-sep { display: none; }
+@media (max-width: 430px) {
+  .seg-fiche button { font-size: 14.5px; padding: 0 6px; gap: 6px; white-space: nowrap; }
+  .seg-fiche button .ic { display: none; }
+}
+.dlg-spot .dlg-actions { flex-wrap: nowrap; }
+.dlg-spot .dlg-actions .btn-second { flex: 0 0 auto; padding: 0 16px; }
+.dlg-spot .dlg-actions .btn-prim { flex: 1 1 0; min-width: 0; padding: 0 12px; }

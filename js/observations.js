@@ -47,10 +47,15 @@
       const photos = App.donnees.photosDe(c, o);
       const meta = [];
       if (!opts.sansEspece) meta.push('<span>' + u.ic('calendrier') + u.dateCourte(o.date) + '</span>');
-      if (o.lieu || aUnePosition(o)) {
-        meta.push('<span>' + u.ic('epingle') + (o.lieu ? u.esc(o.lieu) : tr('Position GPS')) +
-          (aUnePosition(o) ? ' <a href="' + lienCarte(o.lat, o.lon) + '" target="_blank" rel="noopener" title="' + u.esc(tr('Voir sur la carte (connexion nécessaire)')) + '" aria-label="' + u.esc(tr('Voir sur la carte')) + '">' + u.ic('carte') + '</a>' : '') +
-          '</span>');
+      // Spot (lien vers sa page) ; le lieu n'est répété que s'il diffère du nom du spot
+      const spot = o.spotId && c.spotsParId ? c.spotsParId.get(o.spotId) : null;
+      const lieuPropre = !!o.lieu && (!spot || o.lieu !== spot.nom);
+      const lienGps = aUnePosition(o) ? ' <a href="' + lienCarte(o.lat, o.lon) + '" target="_blank" rel="noopener" title="' + u.esc(tr('Voir sur la carte (connexion nécessaire)')) + '" aria-label="' + u.esc(tr('Voir sur la carte')) + '">' + u.ic('carte') + '</a>' : '';
+      if (spot) {
+        meta.push('<span>' + u.ic(App.spots.icone(spot)) + '<a class="lien-spot" href="#/spot/' + encodeURIComponent(spot.id) + '" title="' + u.esc(tr('Voir le spot')) + '">' + u.esc(spot.nom) + '</a>' + (lieuPropre ? '' : lienGps) + '</span>');
+      }
+      if (lieuPropre || (!spot && aUnePosition(o))) {
+        meta.push('<span>' + u.ic('epingle') + (o.lieu ? u.esc(o.lieu) : tr('Position GPS')) + lienGps + '</span>');
       }
       meta.push('<span>' + u.pluriel(o.nombre || 1, 'individu') + '</span>');
       if (o.sortie) meta.push('<span>' + u.ic('chemin') + tr('Sortie') + '</span>');
@@ -405,8 +410,18 @@
       nouvelles: [],
       sonsGardes: o ? App.donnees.sonsDe(c, o) : [],
       sonsRetires: [],
-      nouveauxSons: []
+      nouveauxSons: [],
+      spotId: ''
     };
+    // Spot : celui de l'observation, ou celui choisi avec « Nouvelle observation ici » sur la page d'un spot
+    const spotsConnus = c.spots.slice();
+    if (o) etat.spotId = o.spotId && c.spotsParId.has(o.spotId) ? o.spotId : '';
+    else if (App.spots.preselection && c.spotsParId.has(App.spots.preselection)) etat.spotId = App.spots.preselection;
+    App.spots.preselection = null;
+    const spotInitial = etat.spotId ? c.spotsParId.get(etat.spotId) : null;
+    if (!o && spotInitial && spotInitial.lat !== null && spotInitial.lat !== undefined) {
+      etat.lat = spotInitial.lat; etat.lon = spotInitial.lon; etat.precision = spotInitial.precision || null; etat.sourceGps = 'spot';
+    }
     let file = Promise.resolve();
     let dateTouchee = !!o;
     let exifApplique = false;
@@ -432,10 +447,14 @@
       '</div>' +
 
       '<div class="champ"><label for="f-lieu">' + tr('Lieu') + '</label>' +
-      '<div class="ligne-lieu"><input type="text" class="entree" id="f-lieu" list="lieux-connus" autocomplete="off" placeholder="' + u.esc(tr('Rivière Stryama, sortie du village…')) + '" value="' + u.esc(o ? o.lieu || '' : '') + '">' +
+      '<div class="ligne-lieu"><input type="text" class="entree" id="f-lieu" list="lieux-connus" autocomplete="off" placeholder="' + u.esc(tr('Rivière Stryama, sortie du village…')) + '" value="' + u.esc(o ? o.lieu || '' : (spotInitial ? spotInitial.nom : '')) + '">' +
       '<button type="button" class="btn btn-doux btn-gps" id="f-gps" title="' + u.esc(tr('Utiliser le GPS du téléphone')) + '">' + u.ic('position') + tr('Ma position') + '</button></div>' +
       '<datalist id="lieux-connus">' + lieux.map(function (l) { return '<option value="' + u.esc(l) + '">'; }).join('') + '</datalist>' +
       '<div class="gps-info" id="f-gps-info"></div></div>' +
+
+      '<div class="champ"><label for="f-spot">' + tr('Spot') + ' <span class="muet facultatif">' + tr('(facultatif)') + '</span></label>' +
+      '<select class="entree" id="f-spot">' + App.spots.optionsSelect(spotsConnus, etat.lat !== null && etat.sourceGps !== 'spot' ? etat : null, etat.spotId) + '</select>' +
+      '<p class="aide">' + tr('Rattache l’observation à un de tes affûts ou points d’observation, ou crée-en un ici.') + '</p></div>' +
 
       '<div class="champ"><label for="f-nombre">' + tr('Nombre d’individus') + '</label>' +
       '<div class="stepper"><button type="button" data-pas="-1" aria-label="' + u.esc(tr('Un individu de moins')) + '">−</button>' +
@@ -529,9 +548,13 @@
 
     // --- GPS
     function majGps() {
+      // Liste des spots : les plus proches d'abord quand la position est connue
+      const selSpot = $('#f-spot');
+      if (selSpot) selSpot.innerHTML = App.spots.optionsSelect(spotsConnus, etat.lat !== null && etat.sourceGps !== 'spot' ? etat : null, etat.spotId);
       if (etat.lat === null) { infoGps.innerHTML = ''; return; }
       infoGps.innerHTML = u.ic('epingle') + '<span>' + coordonnees(etat.lat, etat.lon) +
-        (etat.precision ? ' (± ' + etat.precision + ' m)' : '') + (etat.sourceGps === 'photo' ? ' · ' + tr('d’après la photo') : '') + '</span>' +
+        (etat.precision ? ' (± ' + etat.precision + ' m)' : '') +
+        (etat.sourceGps === 'photo' ? ' · ' + tr('d’après la photo') : etat.sourceGps === 'spot' ? ' · ' + tr('d’après le spot') : '') + '</span>' +
         '<a class="lien-btn" href="' + lienCarte(etat.lat, etat.lon) + '" target="_blank" rel="noopener">' + tr('Voir la carte') + '</a>' +
         '<button type="button" class="lien-btn" id="f-gps-effacer">' + tr('Effacer') + '</button>';
       $('#f-gps-effacer').addEventListener('click', function () {
@@ -555,6 +578,35 @@
       }, { enableHighAccuracy: true, timeout: 30000, maximumAge: 30000 });
     });
     majGps();
+
+    // --- Spot (facultatif) : un spot existant, aucun, ou un nouveau créé sur place
+    const champSpot = $('#f-spot');
+    let spotAvant = etat.spotId;
+    champSpot.addEventListener('change', async function () {
+      const precedent = spotsConnus.find(function (s) { return s.id === spotAvant; }) || null;
+      if (champSpot.value === '__nouveau') {
+        const cree = await App.spots.editer(null, { nom: champLieu.value.trim(), lat: etat.lat, lon: etat.lon, precision: etat.precision });
+        if (!cree) { champSpot.value = spotAvant; return; }
+        spotsConnus.push(cree);
+        etat.spotId = cree.id;
+        App.ui.toast(tr('Spot enregistré : {nom}', { nom: cree.nom }));
+      } else etat.spotId = champSpot.value;
+      const s = spotsConnus.find(function (x) { return x.id === etat.spotId; }) || null;
+      // Le lieu suit le spot s'il était vide ou rempli par le spot précédent
+      const lieu = champLieu.value.trim();
+      if (!lieu || (precedent && lieu === precedent.nom)) champLieu.value = s ? s.nom : '';
+      // La position du spot sert seulement si l'observation n'a pas la sienne (GPS ou photo)
+      if (etat.lat === null || etat.sourceGps === 'spot') {
+        if (s && s.lat !== null && s.lat !== undefined) {
+          etat.lat = s.lat; etat.lon = s.lon; etat.precision = s.precision || null; etat.sourceGps = 'spot';
+        } else if (etat.sourceGps === 'spot') {
+          etat.lat = etat.lon = etat.precision = null; etat.sourceGps = null;
+        }
+      }
+      spotAvant = etat.spotId;
+      majGps();
+      modifie();
+    });
 
     // --- Nombre
     el.querySelectorAll('[data-pas]').forEach(function (b) {
@@ -610,7 +662,7 @@
         exifApplique = true;
         msgs.push(tr('date et heure'));
       }
-      if (exif.lat !== undefined && etat.lat === null) {
+      if (exif.lat !== undefined && (etat.lat === null || etat.sourceGps === 'spot')) {
         etat.lat = exif.lat; etat.lon = exif.lon; etat.precision = null; etat.sourceGps = 'photo';
         majGps();
         msgs.push(tr('position'));
@@ -813,6 +865,7 @@
           photoIds: etat.photosGardees.map(function (p) { return p.id; }).concat(nouvelles.map(function (p) { return p.id; })),
           sonIds: etat.sonsGardes.map(function (s) { return s.id; }).concat(sonsNouveaux.map(function (s) { return s.id; })),
           sortie: o && o.sortie ? o.sortie : undefined,
+          spotId: etat.spotId || undefined,
           creeLe: o ? o.creeLe : maintenant,
           modifieLe: maintenant
         };

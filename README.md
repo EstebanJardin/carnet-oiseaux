@@ -20,6 +20,22 @@ Android comme une vraie appli, et s'utilise aussi sur PC.
   référence reste visible sur la fiche pour comparer. Les crédits (auteur, licence) sont
   sur chaque fiche, dans Sauvegarde > À propos et dans `images/especes/CREDITS.md`.
 
+### Nouveautés de la version 1.4
+
+- **Mes spots** : sur la fiche de chaque oiseau, le bouton **Mes spots** (à côté de
+  « Mes observations ») montre les **perchoirs connus** de l'espèce (une note libre : où
+  elle se pose d'habitude) et les spots où tu l'as vue. **Tous mes spots** ouvre la liste
+  de tes affûts et points d'observation : nom, position GPS, meilleures heures, notes et
+  une photo facultative.
+- **Page d'un spot** : la distance et la direction depuis ta position (« À 1,2 km au
+  nord-est », calculées sans réseau), les liens Carte et Itinéraire (avec réseau), les
+  heures de tes observations sur place et les espèces que tu y as vues.
+- **Dans le formulaire d'observation**, le champ **Spot** est facultatif : choisis un spot,
+  ou **Nouveau spot…** pour le créer sur place. Le lieu et la position GPS du spot sont
+  repris si l'observation n'a pas déjà les siens. Sur la page d'un spot, **Nouvelle
+  observation ici** remplit tout cela d'avance.
+- Les spots et les perchoirs partent dans les sauvegardes, et le CSV a une colonne `spot`.
+
 ### Nouveautés de la version 1.3
 
 - **Trois langues** : le bouton **FR / БГ / EN** (en haut à droite) passe toute l'appli en
@@ -107,7 +123,8 @@ la sauvegarde.
 2. Copie le fichier sur le PC, par exemple avec le câble USB (dossier *Download*).
 3. Sur le PC, va dans **Sauvegarde** puis **Importer** et choisis le fichier.
    Les données sont **fusionnées** : rien n'est écrasé, la version la plus récente de
-   chaque observation est gardée, et une observation supprimée ne revient pas.
+   chaque observation est gardée, et une observation supprimée ne revient pas. Les
+   spots et les perchoirs connus sont fusionnés de la même façon.
 
 Ensuite, **Nouveautés seulement** produit un petit fichier avec ce qui a changé depuis la
 dernière sauvegarde. Au-delà de 1 Go, la sauvegarde complète est découpée en plusieurs
@@ -183,7 +200,7 @@ séparateur `;`, et s'ouvre directement dans Excel ou LibreOffice (le cyrillique
 
 Colonnes (appli en français) : `date ; heure ; espece_fr ; nom_latin ; nom_bulgare ;
 nom_anglais ; groupe ; nombre ; lieu ; latitude ; longitude ; precision_m ; comportement ;
-meteo ; temperature_c ; notes ; nb_photos ; id_observation ; nb_sons ; id_sortie`
+meteo ; temperature_c ; notes ; nb_photos ; id_observation ; nb_sons ; id_sortie ; spot`
 
 Les titres des colonnes et les libellés (groupe, comportement, météo) suivent la langue de
 l'appli : passe-la en bulgare ou en anglais avant l'export si besoin.
@@ -199,7 +216,8 @@ Si Smokinya utilise un autre modèle de colonnes, la fonction `csv()` se trouve 
 - **GPS des photos** : Android cache parfois la position des photos choisies dans la
   galerie. Sur le terrain, le bouton **Ma position** est plus fiable, et il marche sans
   réseau.
-- **Liens « Voir la carte »** : ils ont besoin de réseau, car ils ouvrent OpenStreetMap.
+- **Liens « Voir la carte »** et **Itinéraire** : ils ont besoin de réseau (OpenStreetMap,
+  Google Maps). La distance et la direction vers un spot, elles, marchent sans réseau.
 - **Micro** : la première fois que tu touches « Enregistrer », autorise le micro. Les filtres
   « voix » du téléphone sont désactivés pour garder le chant fidèle.
 - **Soleil et lune** : calculés sans réseau pour ta dernière position GPS (sinon Karlovo),
@@ -236,6 +254,7 @@ js/partage.js          carte « Nouvelle espèce » à partager
 js/saison.js           page Saison, ligne du jour
 js/cibles.js           page Mes cibles
 js/sortie.js           mode sortie (comptage et bilan)
+js/spots.js            Mes spots, page d'un spot, perchoirs connus
 js/catalogue.js        rubrique 1 : catalogue
 js/observations.js     rubrique 2 : formulaire et listes
 js/fiche.js            rubrique 3 : fiche espèce

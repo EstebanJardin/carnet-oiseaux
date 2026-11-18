@@ -209,6 +209,10 @@
   // « pic-epeiche_2026-11-17.jpg », puis _2, _3… s'il y a plusieurs photos ce jour-là
   async function nomFichier(photo) {
     const c = await App.donnees.charger();
+    if (photo.spotId) { // photo d'un spot : « spot_affut-du-noyer_2026-11-18.jpg »
+      const s = c.spotsParId.get(photo.spotId);
+      return 'spot_' + u.slug(s ? s.nom : 'spot') + '_' + (photo.creeLe || '').slice(0, 10) + '.' + extension(photo);
+    }
     const o = c.obsParId.get(photo.observationId);
     const e = App.esp.get(photo.especeId);
     const date = o ? o.date : (photo.creeLe || '').slice(0, 10);
@@ -263,7 +267,7 @@
       '<button type="button" class="visio-nav prec" data-v="prec" data-t-aria="Photo précédente" aria-label="' + u.esc(tr('Photo précédente')) + '">' + u.ic('gauche') + '</button>' +
       '<button type="button" class="visio-nav suiv" data-v="suiv" data-t-aria="Photo suivante" aria-label="' + u.esc(tr('Photo suivante')) + '">' + u.ic('droite') + '</button>' +
       '</div>' +
-      '<div class="visio-bas"><span class="compteur"></span> · <a href="#" data-v="fiche" data-t="Voir la fiche de l’espèce">' + tr('Voir la fiche de l’espèce') + '</a></div>';
+      '<div class="visio-bas"><span class="compteur"></span><span class="visio-sep"> · </span><a href="#" data-v="fiche" data-t="Voir la fiche de l’espèce">' + tr('Voir la fiche de l’espèce') + '</a></div>';
 
     d.addEventListener('click', function (ev) {
       const b = ev.target.closest('[data-v]');
@@ -316,10 +320,15 @@
     const el = visio.liste[visio.index];
     const p = el.photo, o = el.obs || {};
     const e = App.esp.get(p.especeId);
+    // Photo d'un spot : pas d'espèce, donc ni couverture ni lien vers une fiche
+    const titre = p.especeId ? App.esp.nom(e) : (el.titre || '');
+    d.querySelector('[data-v="fav"]').hidden = !p.especeId;
+    d.querySelector('.visio-bas [data-v="fiche"]').hidden = !p.especeId;
+    d.querySelector('.visio-bas').classList.toggle('sans-fiche', !p.especeId);
     const img = d.querySelector('.visio-scene img');
     const src = url(p, 'affichage');
-    if (src) { img.src = src; img.alt = App.esp.nom(e); } else { img.removeAttribute('src'); img.alt = tr('Aperçu indisponible : télécharge l’original'); }
-    d.querySelector('.visio-titre b').textContent = App.esp.nom(e);
+    if (src) { img.src = src; img.alt = titre; } else { img.removeAttribute('src'); img.alt = tr('Aperçu indisponible : télécharge l’original'); }
+    d.querySelector('.visio-titre b').textContent = titre;
     d.querySelector('.visio-titre small').textContent =
       [o.date ? u.dateLongue(o.date) : '', o.heure || '', o.lieu || ''].filter(Boolean).join(' · ');
     d.querySelector('.compteur').textContent = (visio.index + 1) + ' / ' + visio.liste.length;

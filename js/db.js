@@ -3,19 +3,24 @@
    Magasins :
      observations  { id, especeId, date, heure, lieu, lat, lon, precision,
                      nombre, comportements[], meteo[], temperature, notes,
-                     photoIds[], creeLe, modifieLe }
+                     photoIds[], sonIds[], sortie, spotId, creeLe, modifieLe }
      photos        { id, observationId, especeId, nomOriginal, type, taille,
                      largeur, hauteur, dateExif, original (Blob),
                      affichage (Blob), miniature (Blob), crc{}, favori,
                      creeLe, modifieLe }
+                   (photo d'un spot : spotId au lieu de observationId/especeId)
      suppressions  { id, type, le }  ← traces des suppressions, pour que
                      l'import d'une ancienne sauvegarde ne les fasse pas revenir
+     sons          { id, observationId, especeId, type, duree, blob, … }
+     spots         { id, nom, type, lat, lon, precision, heures, notes,
+                     photoId, creeLe, modifieLe }  ← affûts, points d'observation
+     notesEspeces  { id (= id de l'espèce), perchoirs, modifieLe }
    ===================================================================== */
 'use strict';
 
 (function (App) {
   const NOM_BASE = 'carnet-oiseaux';
-  const VERSION_BASE = 2; // 2 : ajout des sons (chants enregistrés)
+  const VERSION_BASE = 3; // 2 : sons (chants enregistrés) · 3 : spots et perchoirs
   let ouverture = null;
 
   function ouvrir() {
@@ -42,6 +47,12 @@
           const s = base.createObjectStore('sons', { keyPath: 'id' });
           s.createIndex('observationId', 'observationId');
           s.createIndex('especeId', 'especeId');
+        }
+        if (!base.objectStoreNames.contains('spots')) {
+          base.createObjectStore('spots', { keyPath: 'id' });
+        }
+        if (!base.objectStoreNames.contains('notesEspeces')) {
+          base.createObjectStore('notesEspeces', { keyPath: 'id' });
         }
       };
       req.onsuccess = function () {
@@ -110,13 +121,19 @@
 
     charger: async function () {
       if (cache) return cache;
-      const res = await Promise.all([App.db.tout('observations'), App.db.tout('photos'), App.db.tout('sons')]);
-      const obs = res[0], photos = res[1], sons = res[2];
+      const res = await Promise.all([App.db.tout('observations'), App.db.tout('photos'), App.db.tout('sons'),
+        App.db.tout('spots'), App.db.tout('notesEspeces')]);
+      const obs = res[0], photos = res[1], sons = res[2], spots = res[3], notes = res[4];
       obs.sort(function (a, b) { return cleObs(b).localeCompare(cleObs(a)); }); // plus récentes d'abord
       const photosParId = new Map(photos.map(function (p) { return [p.id, p]; }));
       const sonsParId = new Map(sons.map(function (s) { return [s.id, s]; }));
       const obsParId = new Map(obs.map(function (o) { return [o.id, o]; }));
-      cache = { obs: obs, photos: photos, photosParId: photosParId, sons: sons, sonsParId: sonsParId, obsParId: obsParId, resume: null };
+      const spotsParId = new Map(spots.map(function (s) { return [s.id, s]; }));
+      const notesEspeces = new Map(notes.map(function (n) { return [n.id, n]; }));
+      cache = {
+        obs: obs, photos: photos, photosParId: photosParId, sons: sons, sonsParId: sonsParId, obsParId: obsParId,
+        spots: spots, spotsParId: spotsParId, notesEspeces: notesEspeces, resume: null
+      };
       return cache;
     },
 

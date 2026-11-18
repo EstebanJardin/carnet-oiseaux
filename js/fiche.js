@@ -121,9 +121,17 @@
         '</div>' +
         '<aside class="fiche-cote">' + noms + statut + encartRef + '</aside>' +
         '</div>' +
-        '<section class="section" id="mes-obs"><h2>' + tr('Mes observations') + '</h2>' + mesObs + '</section>';
+        // Deux boutons : Mes observations | Mes spots (perchoirs connus, spots où l'espèce a été vue)
+        (function () {
+          const tete = App.spots.enteteFiche(e, c);
+          return '<section class="section" id="mes-obs"><h2 class="sr-only">' + tr('Mes observations') + '</h2>' + tete.html +
+            '<div data-panneau="obs"' + (tete.panneau === 'obs' ? '' : ' hidden') + '>' + mesObs + '</div>' +
+            '<div data-panneau="spots"' + (tete.panneau === 'spots' ? '' : ' hidden') + '>' + App.spots.panneauFiche(e, c) + '</div>' +
+            '</section>';
+        })();
 
       if (r) App.rendu.brancher(el, r.photos);
+      App.spots.brancherFiche(el, e);
 
       const boutonCible = el.querySelector('[data-cible]');
       if (boutonCible) boutonCible.addEventListener('click', function () {

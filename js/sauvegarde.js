@@ -1,7 +1,8 @@
 /* =====================================================================
    sauvegarde.js — export / import, CSV, stockage, réglages d'affichage
    Format .zip :
-     carnet-oiseaux.json   toutes les données (observations, infos photos)
+     carnet-oiseaux.json   toutes les données (observations, infos photos,
+                           spots, perchoirs, cibles)
      observations.csv      le tableau des observations (partie 1)
      photos/…              les originaux, avec un nom clair
      apercus/…             les copies allégées (évite de tout recalculer)
@@ -17,11 +18,11 @@
   const LIMITE_PARTIE = 1024 * 1024 * 1024; // 1 Go par fichier .zip
 
   /* ---------- CSV (tableur) ---------- */
-  function csv(obs) {
+  function csv(obs, spotsParId) {
     // Titres des colonnes dans la langue de l'appli (data/traductions.js : « …||colonne CSV »)
     const entetes = ['date', 'heure', 'espece_fr', 'nom_latin', 'nom_bulgare', 'nom_anglais', 'groupe', 'nombre',
       'lieu', 'latitude', 'longitude', 'precision_m', 'comportement', 'meteo', 'temperature_c', 'notes', 'nb_photos', 'id_observation',
-      'nb_sons', 'id_sortie'].map(function (k) { return tr(k + '||colonne CSV'); });
+      'nb_sons', 'id_sortie', 'spot'].map(function (k) { return tr(k + '||colonne CSV'); });
     const q = function (v) {
       const s = v === null || v === undefined ? '' : String(v);
       return /[";\r\n]/.test(s) || s !== s.trim() ? '"' + s.replace(/"/g, '""') + '"' : s;
@@ -36,7 +37,8 @@
           (o.comportements || []).map(function (k) { return App.libelle(App.COMPORTEMENTS, k); }).join(', '),
           (o.meteo || []).map(function (k) { return App.libelle(App.METEOS, k); }).join(', '),
           o.temperature, o.notes, (o.photoIds || []).length, o.id,
-          (o.sonIds || []).length, o.sortie ? o.sortie.id : ''
+          (o.sonIds || []).length, o.sortie ? o.sortie.id : '',
+          o.spotId && spotsParId && spotsParId.get(o.spotId) ? spotsParId.get(o.spotId).nom : ''
         ].map(q).join(';'));
       });
     return '﻿' + lignes.join('\r\n') + '\r\n'; // BOM : Excel lit l'UTF-8 (cyrillique) correctement
@@ -59,7 +61,7 @@
       tr("CARNET D'OISEAUX — SAUVEGARDE"),
       '',
       tr('Contenu de ce fichier .zip :'),
-      fichier('carnet-oiseaux.json', tr('toutes tes observations et les infos des photos')),
+      fichier('carnet-oiseaux.json', tr('tes observations, tes spots et les infos des photos')),
       fichier('observations.csv', tr('le tableau des observations (Excel, LibreOffice)')),
       fichier('photos/', tr('tes photos originales (nom : espece_date_identifiant)')),
       fichier('apercus/', tr('copies allégées utilisées par l’appli')),
@@ -91,8 +93,11 @@
     const instant = new Date().toISOString();
     const depuis = type === 'nouveautes' ? App.prefs.get('derniereSauvegardeISO', null) : null;
     let obs = c.obs, photos = c.photos, sons = c.sons, suppr = suppressions;
+    let spots = c.spots, notes = Array.from(c.notesEspeces.values());
     if (depuis) {
       obs = obs.filter(function (o) { return (o.modifieLe || '') > depuis; });
+      spots = spots.filter(function (s) { return (s.modifieLe || '') > depuis; });
+      notes = notes.filter(function (n) { return (n.modifieLe || '') > depuis; });
       photos = photos.filter(function (p) { return (p.modifieLe || p.creeLe || '') > depuis; });
       sons = sons.filter(function (s) { return (s.modifieLe || s.creeLe || '') > depuis; });
       suppr = suppr.filter(function (s) { return (s.le || '') > depuis; });
@@ -100,7 +105,10 @@
     const items = photos.map(function (p) {
       const e = App.esp.get(p.especeId);
       const o = c.obsParId.get(p.observationId);
-      const base = u.slug(e.fr) + '_' + (o ? o.date : 'sans-date') + '_' + p.id.slice(-6);
+      const spot = p.spotId ? c.spotsParId.get(p.spotId) : null;
+      const base = p.spotId
+        ? 'spot_' + u.slug(spot ? spot.nom : 'spot') + '_' + (p.creeLe || '').slice(0, 10) + '_' + p.id.slice(-6)
+        : u.slug(e.fr) + '_' + (o ? o.date : 'sans-date') + '_' + p.id.slice(-6);
       const fichiers = [];
       if (p.original) fichiers.push({ cle: 'original', nom: 'photos/' + base + '.' + extension(p), blob: p.original, crc: p.crc && p.crc.original });
       if (p.affichage) fichiers.push({ cle: 'affichage', nom: 'apercus/' + p.id + '_affichage.jpg', blob: p.affichage, crc: p.crc && p.crc.affichage });
@@ -124,6 +132,7 @@
     const total = tous.reduce(function (s, it) { return s + it.taille; }, 0);
     return {
       c: c, type: depuis ? 'nouveautes' : 'complet', depuis: depuis, instant: instant, obs: obs, suppr: suppr,
+      spots: spots, notes: notes,
       parties: parties, taille: total, nbPhotos: items.length, nbSons: itemsSons.length
     };
   }
@@ -148,11 +157,13 @@
         return m;
       }),
       cibles: App.cibles.liste(),
+      spots: prep.spots,
+      notesEspeces: prep.notes,
       suppressions: prep.suppr
     };
     const entrees = [{ nom: 'carnet-oiseaux.json', donnees: JSON.stringify(donnees) }];
     if (index === 0) {
-      entrees.push({ nom: 'observations.csv', donnees: csv(prep.obs) });
+      entrees.push({ nom: 'observations.csv', donnees: csv(prep.obs, prep.c.spotsParId) });
       entrees.push({ nom: tr('LISEZ-MOI.txt'), donnees: lisezMoi() });
     }
     items.forEach(function (it) {
@@ -181,6 +192,8 @@
     const locPh = new Map((await App.db.tout('photos')).map(function (p) { return [p.id, p]; }));
     const locSup = new Map((await App.db.tout('suppressions')).map(function (s) { return [s.id, s]; }));
     const locSons = new Map((await App.db.tout('sons')).map(function (s) { return [s.id, s]; }));
+    const locSpots = new Map((await App.db.tout('spots')).map(function (s) { return [s.id, s]; }));
+    const locNotes = new Map((await App.db.tout('notesEspeces')).map(function (n) { return [n.id, n]; }));
     const ops = [];
 
     (d.suppressions || []).forEach(function (s) {
@@ -195,7 +208,26 @@
       } else if (s.type === 'son') {
         const x = locSons.get(s.id);
         if (x && (x.modifieLe || x.creeLe || '') <= s.le) { ops.push({ magasin: 'sons', effacer: s.id }); locSons.delete(s.id); App.sons.oublierUrl(s.id); }
+      } else if (s.type === 'spot') {
+        const x = locSpots.get(s.id);
+        if (x && (x.modifieLe || '') <= s.le) { ops.push({ magasin: 'spots', effacer: s.id }); locSpots.delete(s.id); }
       }
+    });
+
+    // Spots (affûts, points d'observation) : la version la plus récente gagne
+    (d.spots || []).forEach(function (s) {
+      const sup = locSup.get(s.id);
+      if (sup && (sup.le || '') >= (s.modifieLe || '')) return;
+      const loc = locSpots.get(s.id);
+      if (!loc || (s.modifieLe || '') > (loc.modifieLe || '')) {
+        ops.push({ magasin: 'spots', mettre: s });
+        bilan.spots = (bilan.spots || 0) + 1;
+      }
+    });
+    // Perchoirs connus (une note par espèce)
+    (d.notesEspeces || []).forEach(function (n) {
+      const loc = locNotes.get(n.id);
+      if (!loc || (n.modifieLe || '') > (loc.modifieLe || '')) ops.push({ magasin: 'notesEspeces', mettre: n });
     });
 
     (d.observations || []).forEach(function (o) {
@@ -300,6 +332,7 @@
       let nouv = { obs: 0, photos: 0, taille: 0 };
       if (derniereISO) {
         nouv.obs = c.obs.filter(function (o) { return (o.modifieLe || '') > derniereISO; }).length;
+        nouv.spots = c.spots.filter(function (s) { return (s.modifieLe || '') > derniereISO; }).length;
         c.photos.forEach(function (p) { if ((p.modifieLe || p.creeLe || '') > derniereISO) { nouv.photos++; nouv.taille += tailleBlobs(p); } });
       }
       const theme = App.theme.choix();
@@ -322,7 +355,7 @@
         (c.sons.length ? ', ' + u.pluriel(c.sons.length, 'son') : '') + ' · ≈ ' + u.taille(tailleTotale) + '</span></div></button>' +
         (derniereISO
           ? '<button type="button" class="action-sauv" data-exp="nouveautes">' + u.ic('actualiser') +
-            '<div><strong>' + tr('Nouveautés seulement (.zip)') + '</strong><span>' + tr('{a} : {b}', { a: tr('Depuis le {date}', { date: u.dateCourte(derniereISO.slice(0, 10)) }), b: u.pluriel(nouv.obs, 'observation') + ', ' + u.pluriel(nouv.photos, 'photo') }) + ' · ≈ ' + u.taille(nouv.taille) + '</span></div></button>'
+            '<div><strong>' + tr('Nouveautés seulement (.zip)') + '</strong><span>' + tr('{a} : {b}', { a: tr('Depuis le {date}', { date: u.dateCourte(derniereISO.slice(0, 10)) }), b: u.pluriel(nouv.obs, 'observation') + ', ' + u.pluriel(nouv.photos, 'photo') + (nouv.spots ? ', ' + u.pluriel(nouv.spots, 'spot') : '') }) + ' · ≈ ' + u.taille(nouv.taille) + '</span></div></button>'
           : '') +
         '<button type="button" class="action-sauv" data-exp="json">' + u.ic('fichier') +
         '<div><strong>' + tr('Données seules (.json)') + '</strong><span>' + tr('Observations sans les photos, très léger') + '</span></div></button>' +
@@ -431,14 +464,14 @@
               await exporterZip(type);
             } else if (type === 'json') {
               const suppressions = await App.db.tout('suppressions');
-              const d = { format: FORMAT, version: VERSION_FORMAT, appli: App.VERSION, exporteLe: new Date().toISOString(), type: 'donnees', observations: c.obs, photos: [], sons: [], cibles: App.cibles.liste(), suppressions: suppressions };
+              const d = { format: FORMAT, version: VERSION_FORMAT, appli: App.VERSION, exporteLe: new Date().toISOString(), type: 'donnees', observations: c.obs, photos: [], sons: [], cibles: App.cibles.liste(), spots: c.spots, notesEspeces: Array.from(c.notesEspeces.values()), suppressions: suppressions };
               const nom = 'carnet-oiseaux_donnees_' + u.dateISO() + '.json';
               const blob = new Blob([JSON.stringify(d, null, 1)], { type: 'application/json' });
               App.telechargerBlob(blob, nom);
               etatExp.innerHTML = '<p class="journal-import">' + u.ic('check') + ' ' + tr('{fichier} téléchargé (sans les photos).', { fichier: u.esc(nom) }) + (await proposerPartage(blob, nom)) + '</p>';
             } else if (type === 'csv') {
               const nom = 'observations_' + u.dateISO() + '.csv';
-              const blob = new Blob([csv(c.obs)], { type: 'text/csv;charset=utf-8' });
+              const blob = new Blob([csv(c.obs, c.spotsParId)], { type: 'text/csv;charset=utf-8' });
               App.telechargerBlob(blob, nom);
               etatExp.innerHTML = '<p class="journal-import">' + u.ic('check') + ' ' + tr('{fichier} téléchargé : {lignes}, séparateur « ; ».', { fichier: u.esc(nom), lignes: u.pluriel(c.obs.length, 'ligne') }) + (await proposerPartage(blob, nom)) + '</p>';
             }
@@ -482,6 +515,7 @@
           u.pluriel(bilan.misesAJour, 'mise à jour', 'mises à jour') + ', ' +
           u.pluriel(bilan.photosAjoutees, 'photo ajoutée', 'photos ajoutées') +
           (bilan.sonsAjoutes ? ', ' + u.pluriel(bilan.sonsAjoutes, 'son ajouté', 'sons ajoutés') : '') +
+          (bilan.spots ? ', ' + u.pluriel(bilan.spots, 'spot ajouté ou mis à jour', 'spots ajoutés ou mis à jour') : '') +
           (bilan.ignorees ? ' · ' + tr('{n} déjà à jour', { n: bilan.ignorees }) : '') +
           (bilan.supprimees ? ' · ' + u.pluriel(bilan.supprimees, 'supprimée', 'supprimées') : '') }) + '</span></div></div>' +
           (bilan.erreurs.length ? '<ul class="erreur-champ">' + bilan.erreurs.map(function (x) { return '<li>' + u.esc(x) + '</li>'; }).join('') + '</ul>' : '') +
