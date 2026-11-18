@@ -95,7 +95,7 @@
       central.push(cd.buffer, nom);
 
       position += 30 + nom.length + taille;
-      if (position > 0xFFFFFFFF) throw new Error('Sauvegarde trop grande pour un seul fichier .zip');
+      if (position > 0xFFFFFFFF) throw new Error(App.tr('Sauvegarde trop grande pour un seul fichier .zip'));
       if (surProgression) surProgression(i + 1, entrees.length);
     }
     const tailleCentral = central.reduce(function (s, b) { return s + (b.byteLength || b.length); }, 0);
@@ -105,7 +105,7 @@
     fin.setUint16(10, entrees.length, true);
     fin.setUint32(12, tailleCentral, true);
     fin.setUint32(16, position, true);
-    if (entrees.length > 0xFFFF) throw new Error('Trop de fichiers pour un seul .zip');
+    if (entrees.length > 0xFFFF) throw new Error(App.tr('Trop de fichiers pour un seul .zip'));
     return new Blob(morceaux.concat(central, [fin.buffer]), { type: 'application/zip' });
   }
 
@@ -118,11 +118,11 @@
     for (let i = finBuf.byteLength - 22; i >= 0; i--) {
       if (finBuf.getUint32(i, true) === 0x06054b50) { p = i; break; }
     }
-    if (p === -1) throw new Error('Ce fichier n’est pas un .zip valide');
+    if (p === -1) throw new Error(App.tr('Ce fichier n’est pas un .zip valide'));
     const nb = finBuf.getUint16(p + 10, true);
     const tailleCD = finBuf.getUint32(p + 12, true);
     const debutCD = finBuf.getUint32(p + 16, true);
-    if (debutCD === 0xFFFFFFFF) throw new Error('Format .zip64 non pris en charge');
+    if (debutCD === 0xFFFFFFFF) throw new Error(App.tr('Format .zip64 non pris en charge'));
     const cd = new DataView(await fichier.slice(debutCD, debutCD + tailleCD).arrayBuffer());
     const entrees = new Map();
     let o = 0;
@@ -142,7 +142,7 @@
         taille: tailleReelle,
         blob: async function (type) {
           const tete = new DataView(await fichier.slice(decalage, decalage + 30).arrayBuffer());
-          if (tete.getUint32(0, true) !== 0x04034b50) throw new Error('Entrée .zip abîmée : ' + nom);
+          if (tete.getUint32(0, true) !== 0x04034b50) throw new Error(App.tr('Entrée .zip abîmée : {nom}', { nom: nom }));
           const debut = decalage + 30 + tete.getUint16(26, true) + tete.getUint16(28, true);
           const brut = fichier.slice(debut, debut + tailleComp);
           if (methode === 0) return new Blob([brut], { type: type || '' });
@@ -151,7 +151,7 @@
             const b = await new Response(flux).blob();
             return type ? new Blob([b], { type: type }) : b;
           }
-          throw new Error('Compression .zip non prise en charge pour ' + nom);
+          throw new Error(App.tr('Compression .zip non prise en charge pour {nom}', { nom: nom }));
         },
         texte: async function () { return (await this.blob()).text(); }
       });

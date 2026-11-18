@@ -5,6 +5,7 @@
 
 (function (App) {
   const u = App.u;
+  const tr = App.tr;
 
   function cleMois(d) { return d.y + '-' + u.pad(d.m); }
   function moisSuivant(d) { return d.m === 12 ? { y: d.y + 1, m: 1 } : { y: d.y, m: d.m + 1 }; }
@@ -48,9 +49,9 @@
       etiquettes += '<text x="' + cx.toFixed(1) + '" y="' + (base + 17) + '" text-anchor="middle"' + (x.actuel ? ' style="font-weight:800;fill:var(--encre)"' : '') + '>' + u.MOIS_COURT[x.d.m - 1].replace('.', '') + '</text>';
       if (x.d.m === 1 || i === 0) etiquettes += '<text x="' + cx.toFixed(1) + '" y="' + (base + 32) + '" text-anchor="middle">' + x.d.y + '</text>';
       zones += '<rect class="zone" data-i="' + i + '" x="' + (G + i * pas).toFixed(1) + '" y="0" width="' + pas.toFixed(1) + '" height="' + H + '" fill="transparent"><title>' +
-        nomMois(x.d) + ' : ' + u.pluriel(x.nb, 'observation') + '</title></rect>';
+        tr('{a} : {b}', { a: nomMois(x.d), b: u.pluriel(x.nb, 'observation') }) + '</title></rect>';
     });
-    return '<svg class="graph" viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Nombre d’observations par mois">' +
+    return '<svg class="graph" viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="' + u.esc(tr('Nombre d’observations par mois')) + '">' +
       '<line class="axe" x1="' + G + '" x2="' + (W - D) + '" y1="' + base + '" y2="' + base + '"/>' +
       barres + etiquettes + zones + '</svg>';
   }
@@ -65,10 +66,10 @@
       const pct = total ? Math.round(vues / total * 100) : 0;
 
       if (!c.obs.length) {
-        el.innerHTML = App.ui.entete({ titre: 'Statistiques' }) +
+        el.innerHTML = App.ui.entete({ titre: tr('Statistiques') }) +
           '<div class="vide"><svg class="ph-oiseau" aria-hidden="true"><use href="#i-oiseau"/></svg>' +
-          '<h2>Pas encore de chiffres</h2><p>Les statistiques apparaîtront dès ta première observation.</p>' +
-          '<a class="btn btn-prim" href="#/ajouter">' + u.ic('plus') + 'Ajouter une observation</a></div>';
+          '<h2>' + tr('Pas encore de chiffres') + '</h2><p>' + tr('Les statistiques apparaîtront dès ta première observation.') + '</p>' +
+          '<a class="btn btn-prim" href="#/ajouter">' + u.ic('plus') + tr('Ajouter une observation') + '</a></div>';
         return;
       }
 
@@ -115,7 +116,7 @@
           if ((o.date || '').slice(0, 4) === a && !premieres.has(o.especeId)) premieres.set(o.especeId, o);
         });
         const l = Array.from(premieres.values());
-        return '<p class="muet petit" style="margin-bottom:8px">' + u.pluriel(l.length, 'espèce') + ' observée' + (l.length > 1 ? 's' : '') + ' en ' + a + ', dans l’ordre de leur première observation.</p>' +
+        return '<p class="muet petit" style="margin-bottom:8px">' + tr(l.length > 1 ? '{n} observées en {annee}, dans l’ordre de leur première observation.' : '{n} observée en {annee}, dans l’ordre de leur première observation.', { n: u.pluriel(l.length, 'espèce'), annee: a }) + '</p>' +
           '<ul class="liste-simple">' + l.map(function (o, i) {
             const e = App.esp.get(o.especeId);
             const r = resume.get(o.especeId);
@@ -135,50 +136,50 @@
       }).filter(function (x) { return x.total > 0; });
 
       el.innerHTML =
-        App.ui.entete({ titre: 'Statistiques', sous: 'Depuis le ' + u.dateLongue(c.obs[c.obs.length - 1].date) }) +
+        App.ui.entete({ titre: tr('Statistiques'), sous: tr('Depuis le {date}', { date: u.dateLongue(c.obs[c.obs.length - 1].date) }) }) +
 
         '<section class="section" style="margin-top:12px">' +
         '<div class="encart">' +
         '<div style="display:flex;align-items:baseline;justify-content:space-between;gap:10px;flex-wrap:wrap">' +
         '<div><span style="font:600 40px/1 var(--police-titre)">' + vues + '</span>' +
-        '<span class="muet" style="font-size:18px"> / ' + total + ' espèces du catalogue</span></div>' +
-        '<b style="font-size:20px">' + pct + ' %</b></div>' +
-        '<div class="progression" style="height:12px;margin-top:12px" role="progressbar" aria-label="Espèces observées" aria-valuemin="0" aria-valuemax="' + total + '" aria-valuenow="' + vues + '"><span style="width:' + pct + '%"></span></div>' +
+        '<span class="muet" style="font-size:18px"> / ' + tr('{n} espèces du catalogue', { n: total }) + '</span></div>' +
+        '<b style="font-size:20px">' + u.pct(pct) + '</b></div>' +
+        '<div class="progression" style="height:12px;margin-top:12px" role="progressbar" aria-label="' + u.esc(tr('Espèces observées')) + '" aria-valuemin="0" aria-valuemax="' + total + '" aria-valuenow="' + vues + '"><span style="width:' + pct + '%"></span></div>' +
         '</div></section>' +
 
         '<div class="chiffres">' +
-        '<div class="chiffre"><b>' + u.nombre(c.obs.length) + '</b><span>observations</span></div>' +
-        '<div class="chiffre"><b>' + u.nombre(individus) + '</b><span>individus comptés</span></div>' +
-        '<div class="chiffre"><b>' + u.nombre(photos) + '</b><span>photos</span></div>' +
-        '<div class="chiffre"><b>' + u.nombre(jours.size) + '</b><span>jours de terrain</span></div>' +
+        '<div class="chiffre"><b>' + u.nombre(c.obs.length) + '</b><span>' + u.mot(c.obs.length, 'observation') + '</span></div>' +
+        '<div class="chiffre"><b>' + u.nombre(individus) + '</b><span>' + u.mot(individus, 'individu compté', 'individus comptés') + '</span></div>' +
+        '<div class="chiffre"><b>' + u.nombre(photos) + '</b><span>' + u.mot(photos, 'photo') + '</span></div>' +
+        '<div class="chiffre"><b>' + u.nombre(jours.size) + '</b><span>' + u.mot(jours.size, 'jour de terrain', 'jours de terrain') + '</span></div>' +
         '</div>' +
 
-        '<section class="section"><h2>Observations par mois</h2>' +
+        '<section class="section"><h2>' + tr('Observations par mois') + '</h2>' +
         '<div class="encart">' + graphique(mois, Math.max(280, Math.min(900, el.clientWidth - 72))) +
         '<p id="graph-info" class="petit" style="margin:8px 0 0;min-height:22px" aria-live="polite"></p></div>' +
-        '<table class="sr-only"><caption>Observations par mois</caption><tr><th>Mois</th><th>Observations</th><th>Espèces</th></tr>' +
+        '<table class="sr-only"><caption>' + tr('Observations par mois') + '</caption><tr><th>' + tr('Mois') + '</th><th>' + tr('Observations') + '</th><th>' + tr('Espèces') + '</th></tr>' +
         mois.map(function (x) { return '<tr><td>' + nomMois(x.d) + '</td><td>' + x.nb + '</td><td>' + x.especes + '</td></tr>'; }).join('') +
         '</table></section>' +
 
-        '<section class="section"><h2>Dernières espèces ajoutées</h2>' +
+        '<section class="section"><h2>' + tr('Dernières espèces ajoutées') + '</h2>' +
         '<ul class="liste-simple">' + nouvelles.map(function (x) {
           const e = App.esp.get(x.id);
           return '<li><a href="#/espece/' + encodeURIComponent(x.id) + '">' + App.ui.vignette(x.r.couverture, '', x.id) +
-            '<span class="ls-txt"><b>' + u.esc(App.esp.nom(e, langue)) + '</b><small>' + u.esc(window.GROUPES[e.groupe] || '') + '</small></span>' +
-            '<span class="droite">1<sup>re</sup> obs.<br>' + u.dateCourte(x.r.premiere.date) + '</span></a></li>';
+            '<span class="ls-txt"><b>' + u.esc(App.esp.nom(e, langue)) + '</b><small>' + u.esc(App.lib.groupe(e.groupe)) + '</small></span>' +
+            '<span class="droite">' + tr('1<sup>re</sup> obs.') + '<br>' + u.dateCourte(x.r.premiere.date) + '</span></a></li>';
         }).join('') + '</ul></section>' +
 
-        '<section class="section"><h2>Premières observations de l’année</h2>' +
-        (annees.length > 1 ? '<div class="annees" role="group" aria-label="Année">' + annees.map(function (a) {
+        '<section class="section"><h2>' + tr('Premières observations de l’année') + '</h2>' +
+        (annees.length > 1 ? '<div class="annees" role="group" aria-label="' + u.esc(tr('Année')) + '">' + annees.map(function (a) {
           return '<button type="button" class="puce' + (a === annee ? ' on' : '') + '" data-annee="' + a + '" aria-pressed="' + (a === annee) + '">' + a + '</button>';
         }).join('') + '</div>' : '') +
         '<div id="liste-annee">' + listeAnnee(annee) + '</div></section>' +
 
-        '<section class="section"><h2>Par groupe</h2><div class="encart groupes-stats">' +
+        '<section class="section"><h2>' + tr('Par groupe') + '</h2><div class="encart groupes-stats">' +
         groupes.map(function (x) {
           const p = Math.round(x.ok / x.total * 100);
-          return '<div class="groupe-ligne"><div class="gl-haut"><span>' + u.esc(window.GROUPES[x.g]) + '</span><span>' + x.ok + ' / ' + x.total + '</span></div>' +
-            '<div class="progression" role="progressbar" aria-label="' + u.esc(window.GROUPES[x.g]) + '" aria-valuemin="0" aria-valuemax="' + x.total + '" aria-valuenow="' + x.ok + '"><span style="width:' + p + '%"></span></div></div>';
+          return '<div class="groupe-ligne"><div class="gl-haut"><span>' + u.esc(App.lib.groupe(x.g)) + '</span><span>' + x.ok + ' / ' + x.total + '</span></div>' +
+            '<div class="progression" role="progressbar" aria-label="' + u.esc(App.lib.groupe(x.g)) + '" aria-valuemin="0" aria-valuemax="' + x.total + '" aria-valuenow="' + x.ok + '"><span style="width:' + p + '%"></span></div></div>';
         }).join('') + '</div></section>';
 
       // Survol / toucher d'une barre : détail du mois
@@ -186,7 +187,7 @@
       const svg = el.querySelector('.graph');
       function montrer(i) {
         const x = mois[i];
-        info.innerHTML = '<b>' + nomMois(x.d) + '</b> : ' + u.pluriel(x.nb, 'observation') + (x.nb ? ', ' + u.pluriel(x.especes, 'espèce') : '');
+        info.innerHTML = tr('{a} : {b}', { a: '<b>' + nomMois(x.d) + '</b>', b: u.pluriel(x.nb, 'observation') + (x.nb ? ', ' + u.pluriel(x.especes, 'espèce') : '') });
         svg.querySelectorAll('.barre').forEach(function (b) { b.classList.toggle('active', b.dataset.i === String(i)); });
       }
       svg.addEventListener('pointerover', function (ev) { const z = ev.target.closest('[data-i]'); if (z) montrer(Number(z.dataset.i)); });

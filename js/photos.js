@@ -9,6 +9,7 @@
 
 (function (App) {
   const u = App.u;
+  const tr = App.tr;
   const MAX_AFFICHAGE = 1600, Q_AFFICHAGE = 0.82;
   const MAX_MINIATURE = 480, Q_MINIATURE = 0.74;
 
@@ -20,7 +21,7 @@
       const img = new Image();
       img.decoding = 'async';
       img.onload = function () { ok({ img: img, url: url }); };
-      img.onerror = function () { URL.revokeObjectURL(url); ko(new Error('Format d’image non lisible par le navigateur')); };
+      img.onerror = function () { URL.revokeObjectURL(url); ko(new Error(tr('Format d’image non lisible par le navigateur'))); };
       img.src = url;
     });
   }
@@ -42,7 +43,7 @@
 
   function enJpeg(canvas, qualite) {
     return new Promise(function (ok, ko) {
-      canvas.toBlob(function (b) { if (b) ok(b); else ko(new Error('Compression impossible')); }, 'image/jpeg', qualite);
+      canvas.toBlob(function (b) { if (b) ok(b); else ko(new Error(tr('Compression impossible'))); }, 'image/jpeg', qualite);
     });
   }
 
@@ -236,10 +237,10 @@
 
   async function telecharger(photo) {
     const blob = photo.original || photo.affichage;
-    if (!blob) { App.ui.toast('Fichier introuvable', { erreur: true }); return; }
+    if (!blob) { App.ui.toast(tr('Fichier introuvable'), { erreur: true }); return; }
     const nom = await nomFichier(photo);
     App.telechargerBlob(blob, nom);
-    App.ui.toast('Téléchargement : ' + nom);
+    App.ui.toast(tr('Téléchargement : {nom}', { nom: nom }));
   }
 
   /* ---------- Visionneuse plein écran ---------- */
@@ -253,16 +254,16 @@
     d.innerHTML =
       '<div class="visio-haut">' +
       '<div class="visio-titre"><b></b><small></small></div>' +
-      '<button type="button" class="btn-icone" data-v="fav" title="Choisir comme photo de couverture de l’espèce">' + u.ic('etoile') + '</button>' +
-      '<button type="button" class="btn-icone" data-v="dl" title="Télécharger l’original" aria-label="Télécharger l’original">' + u.ic('telecharger') + '</button>' +
-      '<button type="button" class="btn-icone" data-v="fermer" aria-label="Fermer la visionneuse">' + u.ic('x') + '</button>' +
+      '<button type="button" class="btn-icone" data-v="fav" data-t-title="Choisir comme photo de couverture de l’espèce" title="' + u.esc(tr('Choisir comme photo de couverture de l’espèce')) + '">' + u.ic('etoile') + '</button>' +
+      '<button type="button" class="btn-icone" data-v="dl" data-t-title="Télécharger l’original" data-t-aria="Télécharger l’original" title="' + u.esc(tr('Télécharger l’original')) + '" aria-label="' + u.esc(tr('Télécharger l’original')) + '">' + u.ic('telecharger') + '</button>' +
+      '<button type="button" class="btn-icone" data-v="fermer" data-t-aria="Fermer la visionneuse" aria-label="' + u.esc(tr('Fermer la visionneuse')) + '">' + u.ic('x') + '</button>' +
       '</div>' +
       '<div class="visio-scene">' +
       '<img alt="">' +
-      '<button type="button" class="visio-nav prec" data-v="prec" aria-label="Photo précédente">' + u.ic('gauche') + '</button>' +
-      '<button type="button" class="visio-nav suiv" data-v="suiv" aria-label="Photo suivante">' + u.ic('droite') + '</button>' +
+      '<button type="button" class="visio-nav prec" data-v="prec" data-t-aria="Photo précédente" aria-label="' + u.esc(tr('Photo précédente')) + '">' + u.ic('gauche') + '</button>' +
+      '<button type="button" class="visio-nav suiv" data-v="suiv" data-t-aria="Photo suivante" aria-label="' + u.esc(tr('Photo suivante')) + '">' + u.ic('droite') + '</button>' +
       '</div>' +
-      '<div class="visio-bas"><span class="compteur"></span> · <a href="#" data-v="fiche">Voir la fiche de l’espèce</a></div>';
+      '<div class="visio-bas"><span class="compteur"></span> · <a href="#" data-v="fiche" data-t="Voir la fiche de l’espèce">' + tr('Voir la fiche de l’espèce') + '</a></div>';
 
     d.addEventListener('click', function (ev) {
       const b = ev.target.closest('[data-v]');
@@ -317,7 +318,7 @@
     const e = App.esp.get(p.especeId);
     const img = d.querySelector('.visio-scene img');
     const src = url(p, 'affichage');
-    if (src) { img.src = src; img.alt = App.esp.nom(e); } else { img.removeAttribute('src'); img.alt = 'Aperçu indisponible : télécharge l’original'; }
+    if (src) { img.src = src; img.alt = App.esp.nom(e); } else { img.removeAttribute('src'); img.alt = tr('Aperçu indisponible : télécharge l’original'); }
     d.querySelector('.visio-titre b').textContent = App.esp.nom(e);
     d.querySelector('.visio-titre small').textContent =
       [o.date ? u.dateLongue(o.date) : '', o.heure || '', o.lieu || ''].filter(Boolean).join(' · ');
@@ -325,7 +326,7 @@
     const fav = d.querySelector('[data-v="fav"]');
     fav.classList.toggle('fav-on', !!p.favori);
     fav.setAttribute('aria-pressed', String(!!p.favori));
-    fav.setAttribute('aria-label', p.favori ? 'Photo de couverture de l’espèce (retirer)' : 'Choisir comme photo de couverture');
+    fav.setAttribute('aria-label', p.favori ? tr('Photo de couverture de l’espèce (retirer)') : tr('Choisir comme photo de couverture'));
     const plusieurs = visio.liste.length > 1;
     d.querySelectorAll('.visio-nav').forEach(function (b) { b.hidden = !plusieurs; });
     // Précharge les voisines
@@ -345,8 +346,8 @@
       el.photo = Object.assign({}, el.photo, { favori: devient });
       visio.modifie = true;
       montrer();
-      App.ui.toast(devient ? 'Photo de couverture de l’espèce' : 'Photo de couverture retirée');
-    } catch (e) { App.ui.toast('Impossible : ' + e.message, { erreur: true }); }
+      App.ui.toast(devient ? tr('Photo de couverture de l’espèce') : tr('Photo de couverture retirée'));
+    } catch (e) { App.ui.toast(tr('Impossible : {erreur}', { erreur: e.message }), { erreur: true }); }
   }
 
   // liste : [{ photo, obs }]

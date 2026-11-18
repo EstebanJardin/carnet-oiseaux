@@ -21,7 +21,7 @@
   function ouvrir() {
     if (ouverture) return ouverture;
     ouverture = new Promise(function (ok, ko) {
-      if (!('indexedDB' in window)) { ko(new Error('Ce navigateur ne permet pas de stocker des données (IndexedDB).')); return; }
+      if (!('indexedDB' in window)) { ko(new Error(App.tr('Ce navigateur ne permet pas de stocker des données (IndexedDB).'))); return; }
       const req = indexedDB.open(NOM_BASE, VERSION_BASE);
       req.onupgradeneeded = function () {
         const base = req.result;
@@ -50,7 +50,7 @@
         ok(base);
       };
       req.onerror = function () { ouverture = null; ko(req.error); };
-      req.onblocked = function () { ko(new Error("La base est bloquée : ferme les autres onglets de l'appli.")); };
+      req.onblocked = function () { ko(new Error(App.tr("La base est bloquée : ferme les autres onglets de l'appli."))); };
     });
     return ouverture;
   }
@@ -65,7 +65,7 @@
     return new Promise(function (ok, ko) {
       tx.oncomplete = function () { ok(); };
       tx.onerror = function () { ko(tx.error); };
-      tx.onabort = function () { ko(tx.error || new Error('Écriture annulée')); };
+      tx.onabort = function () { ko(tx.error || new Error(App.tr('Écriture annulée'))); };
     });
   }
 

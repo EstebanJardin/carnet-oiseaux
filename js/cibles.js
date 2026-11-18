@@ -7,6 +7,7 @@
 
 (function (App) {
   const u = App.u;
+  const tr = App.tr;
 
   /* ---------- La liste (gardée dans les réglages et dans les sauvegardes) ---------- */
   App.cibles = {
@@ -71,7 +72,7 @@
         .sort(function (a, b) { return App.donnees.cleObs(resume.get(b.id).premiere).localeCompare(App.donnees.cleObs(resume.get(a.id).premiere)); });
 
       const habitats = function (e) {
-        return u.esc(e.habitats.map(function (h) { return window.HABITATS[h]; }).filter(Boolean).join(', '));
+        return u.esc(e.habitats.map(App.lib.habitat).filter(Boolean).join(', '));
       };
       // Une ligne : photo, nom, puis l'info de saison et les habitats en petit (toute la largeur pour le nom)
       const ligne = function (e, infos) {
@@ -81,56 +82,55 @@
           App.ui.vignette(r && r.couverture, '', e.id) +
           '<span class="ls-txt"><b>' + u.esc(nom) + '</b>' +
           infos.filter(Boolean).map(function (i) { return '<small>' + i + '</small>'; }).join('') + '</span></a>' +
-          '<button type="button" class="btn-icone retirer" data-retirer="' + u.esc(e.id) + '" aria-label="Retirer ' + u.esc(nom) + ' de mes cibles" title="Retirer de mes cibles">' +
+          '<button type="button" class="btn-icone retirer" data-retirer="' + u.esc(e.id) + '" aria-label="' + u.esc(tr('Retirer {nom} de mes cibles', { nom: nom })) + '" title="' + u.esc(tr('Retirer de mes cibles')) + '">' +
           u.ic('x') + '</button></li>';
       };
       const liste = function (l, fn) { return '<ul class="liste-simple">' + l.map(fn).join('') + '</ul>'; };
 
       const boutonAjout = function (cls) {
-        return '<button type="button" class="btn ' + cls + '" data-ajouter>' + u.ic('plus') + 'Ajouter une cible</button>';
+        return '<button type="button" class="btn ' + cls + '" data-ajouter>' + u.ic('plus') + tr('Ajouter une cible') + '</button>';
       };
 
       let corps;
       if (!especes.length) {
         corps = '<div class="vide">' + u.ic('cible', 'ic-vide') +
-          '<h2>Aucune cible pour l’instant</h2>' +
-          '<p>Choisis les espèces que tu veux trouver ou photographier : je te dirai quand c’est leur saison.</p>' +
+          '<h2>' + tr('Aucune cible pour l’instant') + '</h2>' +
+          '<p>' + tr('Choisis les espèces que tu veux trouver ou photographier : je te dirai quand c’est leur saison.') + '</p>' +
           boutonAjout('btn-prim') + '</div>';
       } else {
         corps = '<div class="barre-cibles">' + boutonAjout('btn-doux') + '</div>' +
-          '<section class="section"><h2>' + u.ic('cible') + 'À chercher en ' + u.MOIS[m - 1] + '</h2>' +
+          '<section class="section"><h2>' + u.ic('cible') + tr('À chercher en {mois}', { mois: u.MOIS[m - 1] }) + '</h2>' +
           (maintenant.length
             ? liste(maintenant, function (e) {
-                const saison = toutLAnnee(e) ? 'toute l’année'
-                  : dernierMois(e) ? '<span class="tag tag-cible">dernier mois</span>'
-                  : 'jusqu’en ' + u.MOIS[finSaison(e, m) - 1];
+                const saison = toutLAnnee(e) ? tr('toute l’année')
+                  : dernierMois(e) ? '<span class="tag tag-cible">' + tr('dernier mois') + '</span>'
+                  : tr('jusqu’en {mois}', { mois: u.MOIS[finSaison(e, m) - 1] });
                 return ligne(e, [saison, habitats(e)]);
               })
-            : '<p class="muet">' + (aTrouver.length ? 'Aucune de tes cibles n’est présente en ' + u.MOIS[m - 1] + '.' : 'Tu as trouvé toutes tes cibles. Bravo !') + '</p>') +
+            : '<p class="muet">' + (aTrouver.length ? tr('Aucune de tes cibles n’est présente en {mois}.', { mois: u.MOIS[m - 1] }) : tr('Tu as trouvé toutes tes cibles. Bravo !')) + '</p>') +
           '</section>' +
           (plusTard.length
-            ? '<section class="section"><h2>' + u.ic('calendrier') + 'Plus tard dans l’année</h2>' +
+            ? '<section class="section"><h2>' + u.ic('calendrier') + tr('Plus tard dans l’année') + '</h2>' +
               liste(plusTard, function (e) {
                 const r = retour(e, m);
-                return ligne(e, [(r ? 'arrive en ' + u.MOIS[r.mois - 1] + ' · ' : '') + u.esc(App.saison.plage(e)), habitats(e)]);
+                return ligne(e, [(r ? tr('arrive en {mois}', { mois: u.MOIS[r.mois - 1] }) + ' · ' : '') + u.esc(App.saison.plage(e)), habitats(e)]);
               }) + '</section>'
             : '') +
           (trouvees.length
-            ? '<section class="section"><h2>' + u.ic('check') + 'Trouvées</h2>' +
+            ? '<section class="section"><h2>' + u.ic('check') + tr('Trouvées') + '</h2>' +
               liste(trouvees, function (e) {
                 const r = resume.get(e.id);
-                return ligne(e, ['✓ vue le ' + u.dateCourte(r.premiere.date) + ' · ' + u.pluriel(r.obs.length, 'observation')]);
+                return ligne(e, [tr('✓ vue le {date}', { date: u.dateCourte(r.premiere.date) }) + ' · ' + u.pluriel(r.obs.length, 'observation')]);
               }) + '</section>'
             : '') +
-          '<p class="muet petit">Tu peux aussi ajouter une cible depuis la fiche d’une espèce (bouton « Cible »). ' +
-          'Les saisons viennent des mois de présence du catalogue.</p>';
+          '<p class="muet petit">' + tr('Tu peux aussi ajouter une cible depuis la fiche d’une espèce (bouton « Cible »). Les saisons viennent des mois de présence du catalogue.') + '</p>';
       }
 
-      const sous = !especes.length ? 'Les espèces que tu veux trouver'
+      const sous = !especes.length ? tr('Les espèces que tu veux trouver')
         : !aTrouver.length ? u.pluriel(trouvees.length, 'cible trouvée', 'cibles trouvées')
-        : aTrouver.length + ' à trouver' + (maintenant.length ? ' · ' + maintenant.length + ' en ' + u.MOIS[m - 1] : '');
+        : tr('{n} à trouver', { n: aTrouver.length }) + (maintenant.length ? ' · ' + tr('{n} en {mois}', { n: maintenant.length, mois: u.MOIS[m - 1] }) : '');
 
-      el.innerHTML = App.ui.entete({ titre: 'Mes cibles', sous: sous, retour: '#/catalogue' }) + corps;
+      el.innerHTML = App.ui.entete({ titre: tr('Mes cibles'), sous: sous, retour: '#/catalogue' }) + corps;
 
       // Redessine la page si l'on est encore dessus (ex. bouton « Annuler » d'un message)
       const redessiner = function () { if (document.body.dataset.vue === 'cibles') App.rafraichir(); };
@@ -141,8 +141,8 @@
           const id = retirer.dataset.retirer;
           if (App.cibles.contient(id)) App.cibles.basculer(id);
           await App.rafraichir();
-          App.ui.toast(App.esp.nom(App.esp.get(id)) + ' n’est plus dans tes cibles', {
-            action: 'Annuler',
+          App.ui.toast(tr('{nom} n’est plus dans tes cibles', { nom: App.esp.nom(App.esp.get(id)) }), {
+            action: tr('Annuler'),
             surAction: function () { if (!App.cibles.contient(id)) App.cibles.basculer(id); redessiner(); }
           });
           return;
@@ -151,10 +151,10 @@
           const id = await App.choisirEspece({ cibles: true });
           if (!id) return;
           const e = App.esp.get(id);
-          if (App.cibles.contient(id)) { App.ui.toast(App.esp.nom(e) + ' est déjà dans tes cibles'); return; }
+          if (App.cibles.contient(id)) { App.ui.toast(tr('{nom} est déjà dans tes cibles', { nom: App.esp.nom(e) })); return; }
           App.cibles.basculer(id);
           await App.rafraichir();
-          App.ui.toast('🎯 Nouvelle cible : ' + App.esp.nom(e) + (resume.has(id) ? ' (déjà observée)' : ' · ' + App.saison.plage(e)));
+          App.ui.toast(tr('🎯 Nouvelle cible : {nom}', { nom: App.esp.nom(e) }) + (resume.has(id) ? ' ' + tr('(déjà observée)') : ' · ' + App.saison.plage(e)));
         }
       });
     }

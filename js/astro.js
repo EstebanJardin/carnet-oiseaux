@@ -59,7 +59,7 @@
       phase: p,
       age: age,
       eclairage: (1 - Math.cos(2 * Math.PI * p)) / 2,
-      nom: NOMS_PHASES[Math.floor(p * 8 + 0.5) % 8],
+      nom: App.tr(NOMS_PHASES[Math.floor(p * 8 + 0.5) % 8]),
       prochainePleine: new Date(date.valueOf() + (((0.5 - p) % 1 + 1) % 1 || 1) * LUNAISON * JOUR),
       prochaineNouvelle: new Date(date.valueOf() + ((1 - p) % 1 || 1) * LUNAISON * JOUR)
     };
@@ -91,7 +91,7 @@
   }
   function duree(ms) {
     const min = Math.round(ms / 60000);
-    return Math.floor(min / 60) + ' h ' + u2(min % 60);
+    return App.tr('{h} h {m}', { h: Math.floor(min / 60), m: u2(min % 60) });
   }
   function u2(n) { return String(n).padStart(2, '0'); }
 
@@ -99,7 +99,7 @@
   async function position() {
     const c = await App.donnees.charger();
     const o = c.obs.find(function (x) { return typeof x.lat === 'number' && typeof x.lon === 'number'; });
-    return o ? { lat: o.lat, lon: o.lon, nom: o.lieu || 'ta dernière position' } : { lat: 42.6417, lon: 24.8058, nom: 'Karlovo' };
+    return o ? { lat: o.lat, lon: o.lon, nom: o.lieu || App.tr('ta dernière position') } : { lat: 42.6417, lon: 24.8058, nom: App.tr('Karlovo') };
   }
 
   App.astro = { soleil: soleil, lune: lune, luneSVG: luneSVG, heure: heure, minutesSofia: minutesSofia, duree: duree, position: position };

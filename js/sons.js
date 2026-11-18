@@ -8,6 +8,7 @@
 
 (function (App) {
   const u = App.u;
+  const tr = App.tr;
   const DUREE_MAX = 180; // secondes
 
   function typeAudio() {
@@ -112,13 +113,13 @@
     if (boutonActif && boutonActif !== bouton) etatBouton(boutonActif, false);
     boutonActif = bouton;
     audio.src = url(son);
-    audio.play().catch(function (e) { App.ui.toast('Lecture impossible : ' + e.message, { erreur: true }); });
+    audio.play().catch(function (e) { App.ui.toast(tr('Lecture impossible : {erreur}', { erreur: e.message }), { erreur: true }); });
   }
   function arreter() { if (audio && !audio.paused) audio.pause(); }
 
   // Bouton compact « ▶ 0:24 »
   function puce(son, attribut) {
-    return '<button type="button" class="son-puce" ' + attribut + '="' + u.esc(son.id) + '" aria-label="Écouter le son (' + format(son.duree) + ')">' +
+    return '<button type="button" class="son-puce" ' + attribut + '="' + u.esc(son.id) + '" aria-label="' + u.esc(tr('Écouter le son ({duree})', { duree: format(son.duree) })) + '">' +
       u.ic('lecture') + '<span>' + format(son.duree) + '</span></button>';
   }
 

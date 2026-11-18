@@ -8,6 +8,7 @@
 
 (function (App) {
   const u = App.u;
+  const tr = App.tr;
   const W = 1080, H = 1350, HPHOTO = 1000;
   const SERIF = 'Georgia, "Noto Serif", "Droid Serif", serif';
   const SANS = 'system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans", sans-serif';
@@ -16,7 +17,7 @@
     return new Promise(function (ok, ko) {
       const img = new Image();
       img.onload = function () { ok(img); };
-      img.onerror = function () { ko(new Error('Image illisible')); };
+      img.onerror = function () { ko(new Error(tr('Image illisible'))); };
       img.src = src;
     });
   }
@@ -44,7 +45,7 @@
 
     let src = null, credit = '';
     if (r && r.couverture) src = App.photos.url(r.couverture, 'affichage');
-    else if (ref) { src = ref.grande; credit = 'Photo : ' + ref.auteur + ' · ' + ref.licence + ' · Wikimedia Commons'; }
+    else if (ref) { src = ref.grande; credit = tr('Photo : {credit}', { credit: ref.auteur + ' · ' + ref.licence + ' · Wikimedia Commons' }); }
 
     const cv = document.createElement('canvas');
     cv.width = W; cv.height = H;
@@ -72,19 +73,19 @@
     x.fillRect(0, HPHOTO, W, 8);
 
     // Rang de l'espèce dans le carnet (ordre des premières observations)
-    let etiquette = 'MON CARNET D’OISEAUX';
+    let etiquette = tr('MON CARNET D’OISEAUX');
     if (r) {
       const ordre = Array.from(resume.entries())
         .sort(function (a, b) { return App.donnees.cleObs(a[1].premiere).localeCompare(App.donnees.cleObs(b[1].premiere)); })
         .map(function (p) { return p[0]; });
       const rang = ordre.indexOf(especeId) + 1;
       const recente = (Date.now() - Date.parse(r.premiere.date)) < 4 * 86400000;
-      etiquette = (recente ? 'NOUVELLE ESPÈCE' : 'MON CARNET') + ' · N° ' + rang;
+      etiquette = (recente ? tr('NOUVELLE ESPÈCE') : tr('MON CARNET')) + ' · ' + tr('N° {n}', { n: rang });
     }
     x.textBaseline = 'alphabetic';
     texte(x, etiquette, 60, HPHOTO + 70, 960, 32, '700', SANS, '#E9B44C');
-    texte(x, e.fr, 60, HPHOTO + 158, 960, 84, '700', SERIF, '#F4F1E8');
-    texte(x, e.bg + '  ·  ' + e.en, 60, HPHOTO + 212, 960, 40, '400', SANS, '#CFE3D7');
+    texte(x, App.esp.nom(e), 60, HPHOTO + 158, 960, 84, '700', SERIF, '#F4F1E8');
+    texte(x, App.esp.autresNoms(e).join('  ·  '), 60, HPHOTO + 212, 960, 40, '400', SANS, '#CFE3D7');
     texte(x, e.la, 60, HPHOTO + 260, 960, 36, 'italic 400', SERIF, '#CFE3D7');
 
     // Lieu et date (dernière observation) + signature de l'appli
@@ -98,11 +99,11 @@
     x.fillText(lieuDate, 60, H - 34, 620);
     x.font = '400 24px ' + SANS;
     x.fillStyle = '#9DC3AE';
-    const signature = 'Carnet d’oiseaux · Sredna Gora';
+    const signature = tr('Carnet d’oiseaux · Sredna Gora');
     x.fillText(signature, W - 60 - x.measureText(signature).width, H - 34);
 
     return new Promise(function (ok, ko) {
-      cv.toBlob(function (b) { if (b) ok(b); else ko(new Error('Image impossible à créer')); }, 'image/jpeg', 0.9);
+      cv.toBlob(function (b) { if (b) ok(b); else ko(new Error(tr('Image impossible à créer'))); }, 'image/jpeg', 0.9);
     });
   }
 
@@ -110,7 +111,7 @@
   async function ouvrir(especeId) {
     let blob;
     try { blob = await creerCarte(especeId); }
-    catch (e) { App.ui.toast('Carte impossible : ' + e.message, { erreur: true }); return; }
+    catch (e) { App.ui.toast(tr('Carte impossible : {erreur}', { erreur: e.message }), { erreur: true }); return; }
     const e = App.esp.get(especeId);
     const nom = u.slug(e.fr) + '_carte.jpg';
     const fichier = new File([blob], nom, { type: 'image/jpeg' });
@@ -118,12 +119,12 @@
     try { peutPartager = !!(navigator.canShare && navigator.canShare({ files: [fichier] })); } catch (err) { peutPartager = false; }
     const adresse = URL.createObjectURL(blob);
     const d = document.getElementById('dlg-confirm');
-    d.innerHTML = '<div class="dlg dlg-partage"><h2>Ta carte à partager</h2>' +
-      '<img src="' + adresse + '" alt="Carte de partage : ' + u.esc(e.fr) + '">' +
+    d.innerHTML = '<div class="dlg dlg-partage"><h2>' + tr('Ta carte à partager') + '</h2>' +
+      '<img src="' + adresse + '" alt="' + u.esc(tr('Carte de partage : {nom}', { nom: App.esp.nom(e) })) + '">' +
       '<div class="dlg-actions">' +
-      '<button type="button" class="btn btn-second" data-x="enregistrer">' + u.ic('telecharger') + 'Enregistrer</button>' +
-      (peutPartager ? '<button type="button" class="btn btn-prim" data-x="partager">' + u.ic('partager') + 'Partager</button>' : '') +
-      '</div><p style="text-align:center;margin:10px 0 0"><button type="button" class="lien-btn" data-x="fermer">Fermer</button></p></div>';
+      '<button type="button" class="btn btn-second" data-x="enregistrer">' + u.ic('telecharger') + tr('Enregistrer') + '</button>' +
+      (peutPartager ? '<button type="button" class="btn btn-prim" data-x="partager">' + u.ic('partager') + tr('Partager') + '</button>' : '') +
+      '</div><p style="text-align:center;margin:10px 0 0"><button type="button" class="lien-btn" data-x="fermer">' + tr('Fermer') + '</button></p></div>';
     d.onclose = function () { URL.revokeObjectURL(adresse); };
     d.onclick = async function (ev) {
       const b = ev.target.closest('[data-x]');
@@ -132,9 +133,12 @@
       else if (b.dataset.x === 'enregistrer') App.telechargerBlob(blob, nom);
       else if (b.dataset.x === 'partager') {
         try {
-          await navigator.share({ files: [fichier], title: e.fr, text: e.fr + ' (' + e.bg + ') · mon carnet d’oiseaux en Bulgarie 🐦' });
+          await navigator.share({
+            files: [fichier], title: App.esp.nom(e),
+            text: tr('{nom} ({autre}) · mon carnet d’oiseaux en Bulgarie 🐦', { nom: App.esp.nom(e), autre: App.langue() === 'bg' ? e.en : e.bg })
+          });
         } catch (err) {
-          if (err && err.name !== 'AbortError') App.ui.toast('Partage impossible : ' + err.message, { erreur: true });
+          if (err && err.name !== 'AbortError') App.ui.toast(tr('Partage impossible : {erreur}', { erreur: err.message }), { erreur: true });
         }
       }
     };

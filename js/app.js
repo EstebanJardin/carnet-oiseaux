@@ -6,6 +6,7 @@
 
 (function (App) {
   const u = App.u;
+  const tr = App.tr;
   const VUES = App._vues || {};
   let nettoyages = [];
   let hashPrecedent = null;
@@ -31,18 +32,31 @@
     basculer: function () { App.theme.definir(App.theme.sombre() ? 'light' : 'dark'); }
   };
 
+  // Nom de chaque langue, écrit dans cette langue
+  const NOMS_LANGUES = { fr: 'Français', bg: 'Български', en: 'English' };
+
   function majOutils() {
     const lang = App.langue();
     document.querySelectorAll('[data-action="langue"]').forEach(function (b) {
       b.textContent = App.LANGUES[lang];
-      b.setAttribute('aria-label', 'Langue des noms : ' + { fr: 'français', bg: 'bulgare', en: 'anglais' }[lang] + ' (changer)');
+      b.setAttribute('aria-label', tr('Langue : {langue}. Toucher pour changer.', { langue: NOMS_LANGUES[lang] }));
     });
     document.querySelectorAll('[data-action="theme"]').forEach(function (b) {
       const sombre = App.theme.sombre();
       b.innerHTML = u.ic(sombre ? 'soleil' : 'lune');
-      b.setAttribute('aria-label', sombre ? 'Passer au thème clair' : 'Passer au thème sombre');
+      b.setAttribute('aria-label', tr(sombre ? 'Passer au thème clair' : 'Passer au thème sombre'));
     });
   }
+
+  // Textes fixes de index.html (menu, bandeau de mise à jour…) : data-t = texte français
+  function majTextes() {
+    document.documentElement.lang = App.langue();
+    document.title = tr('Carnet d’oiseaux · Sredna Gora');
+    document.querySelectorAll('[data-t]').forEach(function (el) { el.textContent = tr(el.dataset.t); });
+    document.querySelectorAll('[data-t-aria]').forEach(function (el) { el.setAttribute('aria-label', tr(el.dataset.tAria)); });
+    document.querySelectorAll('[data-t-title]').forEach(function (el) { el.setAttribute('title', tr(el.dataset.tTitle)); });
+  }
+  App.majTextes = majTextes;
 
   /* ---------- Composants d'interface ---------- */
   App.ui = {
@@ -55,7 +69,7 @@
 
     entete: function (o) {
       return '<header class="entete">' +
-        (o.retour ? '<a class="btn-icone" href="' + o.retour + '" data-action="retour" aria-label="Retour">' + u.ic('retour') + '</a>' : '') +
+        (o.retour ? '<a class="btn-icone" href="' + o.retour + '" data-action="retour" aria-label="' + u.esc(tr('Retour')) + '">' + u.ic('retour') + '</a>' : '') +
         '<div class="entete-txt"><h1>' + o.titre + '</h1>' + (o.sous ? '<p class="sous">' + o.sous + '</p>' : '') + '</div>' +
         '<div class="entete-actions">' + (o.actions || '') + (o.sansOutils ? '' : App.ui.outils()) + '</div>' +
         '</header>';
@@ -96,8 +110,8 @@
           '<h2>' + u.esc(o.titre) + '</h2>' +
           (o.texte ? '<p>' + o.texte + '</p>' : '') +
           '<div class="dlg-actions">' +
-          '<button value="non" class="btn btn-second">' + u.esc(o.annuler || 'Annuler') + '</button>' +
-          '<button value="oui" class="btn ' + (o.danger ? 'btn-danger' : 'btn-prim') + '">' + u.esc(o.ok || 'Confirmer') + '</button>' +
+          '<button value="non" class="btn btn-second">' + u.esc(o.annuler || tr('Annuler')) + '</button>' +
+          '<button value="oui" class="btn ' + (o.danger ? 'btn-danger' : 'btn-prim') + '">' + u.esc(o.ok || tr('Confirmer')) + '</button>' +
           '</div></form>';
         d.returnValue = '';
         d.onclick = null;
@@ -124,13 +138,13 @@
       const jours = u.joursDepuis(reference);
       if (jours < 14) return '';
       const texte = derniere
-        ? 'Pas de sauvegarde depuis ' + jours + ' jours.'
-        : "Tu n'as encore jamais sauvegardé tes observations.";
+        ? tr('Pas de sauvegarde depuis {n} jours.', { n: jours })
+        : tr("Tu n'as encore jamais sauvegardé tes observations.");
       return '<div class="bandeau" role="status">' +
         '<div class="txt">' + u.ic('sauvegarde') + '<span>' + texte + '</span></div>' +
         '<div class="actions">' +
-        '<button type="button" class="btn btn-plus-tard" data-action="rappel-plus-tard">Plus tard</button>' +
-        '<a class="btn btn-rappel" href="#/sauvegarde">Sauvegarder</a>' +
+        '<button type="button" class="btn btn-plus-tard" data-action="rappel-plus-tard">' + tr('Plus tard') + '</button>' +
+        '<a class="btn btn-rappel" href="#/sauvegarde">' + tr('Sauvegarder') + '</a>' +
         '</div></div>';
     }
   };
@@ -172,8 +186,8 @@
     } catch (e) {
       console.error(e);
       el.innerHTML = '<div class="vide"><svg class="ph-oiseau"><use href="#i-oiseau"/></svg>' +
-        "<h2>Impossible d'afficher cette page</h2><p>" + u.esc(e && e.message ? e.message : e) + '</p>' +
-        '<a class="btn btn-prim" href="#/catalogue">Retour au catalogue</a></div>';
+        '<h2>' + tr("Impossible d'afficher cette page") + '</h2><p>' + u.esc(e && e.message ? e.message : e) + '</p>' +
+        '<a class="btn btn-prim" href="#/catalogue">' + tr('Retour au catalogue') + '</a></div>';
     }
     majOutils();
     if (App.sortie) App.sortie.majPastille(r.nom);
@@ -215,14 +229,15 @@
       const ordre = ['fr', 'bg', 'en'];
       const suivante = ordre[(ordre.indexOf(App.langue()) + 1) % ordre.length];
       App.prefs.set('langue', suivante);
+      majTextes();
       if (App.garde && App.formulaireModifie) {
         // Ne pas redessiner un formulaire en cours de saisie
         majOutils();
-        App.ui.toast('Langue changée : elle s’appliquera après l’enregistrement');
+        App.ui.toast(tr('Langue changée : elle s’appliquera après l’enregistrement'));
         return;
       }
       App.rafraichir();
-      App.ui.toast('Noms affichés en ' + { fr: 'français', bg: 'bulgare', en: 'anglais' }[suivante] + ' en premier');
+      App.ui.toast(tr('Appli en français'));
     } else if (action === 'theme') {
       App.theme.basculer();
     } else if (action === 'retour') {
@@ -282,6 +297,7 @@
 
   /* ---------- Démarrage ---------- */
   function demarrer() {
+    majTextes();
     App.theme.appliquer();
     try {
       window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', App.theme.appliquer);

@@ -9,7 +9,7 @@ window.App = window.App || {};
   App.u = u;
 
   // Version de l'appli (à faire correspondre avec VERSION dans sw.js)
-  App.VERSION = '1.2.2';
+  App.VERSION = '1.3.0';
 
   // Les vues (écrans) s'enregistrent ici ; app.js, chargé en dernier, les affiche
   App._vues = {};
@@ -59,18 +59,54 @@ window.App = window.App || {};
     return '<svg class="ic ' + (cls || '') + '" aria-hidden="true"><use href="#i-' + nom + '"/></svg>';
   };
 
-  u.pluriel = function (n, un, plusieurs) {
-    return n + ' ' + (n > 1 ? (plusieurs || un + 's') : un);
+  /* ---------- Traduction (data/traductions.js) ---------- */
+
+  // App.tr(texte en français, {variables}) → le texte dans la langue choisie
+  const TRAD = window.TRADUCTIONS || {};
+  const manquants = new Set();
+  // Un même texte français peut avoir deux sens : « Soleil||astre » s'affiche « Soleil » en français
+  App.tr = function (fr, vars) {
+    const l = App.langue();
+    const cle = fr == null ? '' : String(fr);
+    const i = cle.indexOf('||');
+    let s = i === -1 ? cle : cle.slice(0, i);
+    if (l !== 'fr' && cle) {
+      const e = TRAD[cle];
+      const v = e && e[l === 'en' ? 0 : 1];
+      if (v) s = v;
+      else if (!manquants.has(cle)) { manquants.add(cle); console.warn('Traduction manquante (' + l + ') : ' + cle); }
+    }
+    if (vars) s = s.replace(/\{(\w+)\}/g, function (m, k) { return vars[k] != null ? vars[k] : m; });
+    return s;
+  };
+  const tr = App.tr;
+  App.LOCALES = { fr: 'fr-FR', en: 'en-GB', bg: 'bg-BG' };
+  App.locale = function () { return App.LOCALES[App.langue()] || 'fr-FR'; };
+
+  // Le mot seul, accordé au nombre : en anglais et en bulgare, 0 prend le pluriel
+  u.mot = function (n, un, plusieurs) {
+    const pl = App.langue() === 'fr' ? n > 1 : n !== 1;
+    return tr(pl ? (plusieurs || un + 's') : un);
+  };
+  // « 3 photos »
+  u.pluriel = function (n, un, plusieurs) { return u.nombre(n) + ' ' + u.mot(n, un, plusieurs); };
+
+  u.nombre = function (n) { return Number(n || 0).toLocaleString(App.locale()); };
+  // Pourcentage : « 54 % » en français et en bulgare, « 54% » en anglais
+  u.pct = function (n) { return n + (App.langue() === 'en' ? '%' : ' %'); };
+  // Nombre à virgule : « 42,64 » (fr, bg) ou « 42.64 » (en)
+  u.decimal = function (x, chiffres) {
+    return Number(x).toLocaleString(App.locale(), { minimumFractionDigits: chiffres, maximumFractionDigits: chiffres });
   };
 
-  u.nombre = function (n) { return Number(n || 0).toLocaleString('fr-FR'); };
-
+  const UNITES = { fr: ['o', 'Ko', 'Mo', 'Go', 'To'], en: ['B', 'KB', 'MB', 'GB', 'TB'], bg: ['Б', 'КБ', 'МБ', 'ГБ', 'ТБ'] };
   u.taille = function (octets) {
     if (octets == null || isNaN(octets)) return '?';
-    const unites = ['o', 'Ko', 'Mo', 'Go', 'To'];
+    const unites = UNITES[App.langue()] || UNITES.fr;
     let n = octets, i = 0;
     while (n >= 1024 && i < unites.length - 1) { n /= 1024; i++; }
-    const txt = i === 0 ? String(n) : n.toFixed(n < 10 ? 1 : 0).replace('.', ',');
+    let txt = i === 0 ? String(n) : n.toFixed(n < 10 ? 1 : 0);
+    if (App.langue() !== 'en') txt = txt.replace('.', ',');
     return txt + ' ' + unites[i];
   };
 
@@ -92,9 +128,26 @@ window.App = window.App || {};
 
   /* ---------- Dates (format local, sans fuseau) ---------- */
 
-  u.MOIS = ['janvier', 'février', 'mars', 'avril', 'mai', 'juin', 'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'];
-  u.MOIS_COURT = ['janv.', 'févr.', 'mars', 'avr.', 'mai', 'juin', 'juil.', 'août', 'sept.', 'oct.', 'nov.', 'déc.'];
-  u.INITIALES_MOIS = ['J', 'F', 'M', 'A', 'M', 'J', 'J', 'A', 'S', 'O', 'N', 'D'];
+  // Noms des mois dans la langue choisie (u.MOIS[0] = janvier)
+  const MOIS = {
+    fr: ['janvier', 'février', 'mars', 'avril', 'mai', 'juin', 'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'],
+    en: ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'],
+    bg: ['януари', 'февруари', 'март', 'април', 'май', 'юни', 'юли', 'август', 'септември', 'октомври', 'ноември', 'декември']
+  };
+  const MOIS_COURT = {
+    fr: ['janv.', 'févr.', 'mars', 'avr.', 'mai', 'juin', 'juil.', 'août', 'sept.', 'oct.', 'nov.', 'déc.'],
+    en: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+    bg: ['яну', 'фев', 'март', 'апр', 'май', 'юни', 'юли', 'авг', 'сеп', 'окт', 'ное', 'дек']
+  };
+  const INITIALES = {
+    fr: ['J', 'F', 'M', 'A', 'M', 'J', 'J', 'A', 'S', 'O', 'N', 'D'],
+    en: ['J', 'F', 'M', 'A', 'M', 'J', 'J', 'A', 'S', 'O', 'N', 'D'],
+    bg: ['Я', 'Ф', 'М', 'А', 'М', 'Ю', 'Ю', 'А', 'С', 'О', 'Н', 'Д']
+  };
+  const parLangue = function (table) { return { get: function () { return table[App.langue()] || table.fr; } }; };
+  Object.defineProperty(u, 'MOIS', parLangue(MOIS));
+  Object.defineProperty(u, 'MOIS_COURT', parLangue(MOIS_COURT));
+  Object.defineProperty(u, 'INITIALES_MOIS', parLangue(INITIALES));
 
   u.pad = function (n) { return String(n).padStart(2, '0'); };
 
@@ -111,7 +164,7 @@ window.App = window.App || {};
   u.dateLongue = function (iso) {
     if (!iso) return '';
     const p = iso.split('-').map(Number);
-    return p[2] + ' ' + u.MOIS[p[1] - 1] + ' ' + p[0];
+    return p[2] + ' ' + u.MOIS[p[1] - 1] + ' ' + p[0] + (App.langue() === 'bg' ? ' г.' : '');
   };
   u.dateCourte = function (iso) {
     if (!iso) return '';
@@ -121,16 +174,16 @@ window.App = window.App || {};
   };
   u.jourSemaine = function (iso) {
     const p = iso.split('-').map(Number);
-    return new Date(p[0], p[1] - 1, p[2]).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+    return new Date(p[0], p[1] - 1, p[2]).toLocaleDateString(App.locale(), { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
   };
   u.joursDepuis = function (horodatage) {
     return Math.floor((Date.now() - horodatage) / 86400000);
   };
   u.depuis = function (horodatage) {
     const j = u.joursDepuis(horodatage);
-    if (j <= 0) return "aujourd'hui";
-    if (j === 1) return 'hier';
-    return 'il y a ' + j + ' jours';
+    if (j <= 0) return tr("aujourd'hui");
+    if (j === 1) return tr('hier');
+    return tr('il y a {n} jours', { n: j });
   };
 
   /* ---------- Réglages (stockés dans le navigateur) ---------- */
@@ -185,6 +238,16 @@ window.App = window.App || {};
       langue = langue || App.langue();
       return ['fr', 'bg', 'en'].filter(function (l) { return l !== langue; }).map(function (l) { return e[l]; });
     },
+    // Description et note dans la langue choisie (description_en, description_bg… dans data/especes.js)
+    description: function (e) {
+      if (e.inconnue) return tr(e.description);
+      const l = App.langue();
+      return (l !== 'fr' && e['description_' + l]) || e.description || '';
+    },
+    note: function (e) {
+      const l = App.langue();
+      return (l !== 'fr' && e['note_' + l]) || e.note || '';
+    },
     // Filtre de recherche : tous les mots tapés doivent apparaître dans un des noms
     filtre: function (requete) {
       const mots = u.norm(requete).split(' ').filter(Boolean);
@@ -194,6 +257,15 @@ window.App = window.App || {};
   };
 
   App.PRESENCES_COURT = { resident: 'Résident', estivant: 'Estivant', hivernant: 'Hivernant', passage: 'Passage' };
+
+  // Libellés des données (data/especes.js), traduits dans la langue choisie
+  App.lib = {
+    groupe: function (k) { return tr((window.GROUPES || {})[k] || k); },
+    habitat: function (k) { return tr((window.HABITATS || {})[k] || k); },
+    presence: function (k) { return tr((window.PRESENCES || {})[k] || k); },
+    presenceCourte: function (k) { return tr(App.PRESENCES_COURT[k] || k); },
+    uicn: function (k) { return k && window.UICN && window.UICN[k] ? tr(window.UICN[k]) : ''; }
+  };
 
   /* ---------- Photos de référence (Wikimedia Commons, data/photos.js) ---------- */
 
@@ -227,8 +299,9 @@ window.App = window.App || {};
     ['soleil', 'Soleil', 'soleil'], ['nuageux', 'Nuageux', 'nuage'], ['pluie', 'Pluie', 'pluie'],
     ['neige', 'Neige', 'neige'], ['brouillard', 'Brouillard', 'brouillard'], ['vent', 'Vent', 'vent']
   ];
+  // Libellé traduit d'un comportement ou d'une météo
   App.libelle = function (liste, id) {
     const t = liste.find(function (x) { return x[0] === id; });
-    return t ? t[1] : id;
+    return t ? tr(t[1]) : id;
   };
 })(window.App);

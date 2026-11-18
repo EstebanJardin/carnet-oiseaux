@@ -87,64 +87,65 @@
   </symbol>
 </svg>
 
-<nav class="nav" aria-label="Navigation principale">
+<nav class="nav" aria-label="Navigation principale" data-t-aria="Navigation principale">
   <div class="marque">
     <svg class="marque-logo" aria-hidden="true"><use href="#i-oiseau"/></svg>
-    <div><strong>Carnet d'oiseaux</strong><span>Sredna Gora · Mrachenik</span></div>
+    <div><strong data-t="Carnet d'oiseaux">Carnet d'oiseaux</strong><span data-t="Sredna Gora · Mrachenik">Sredna Gora · Mrachenik</span></div>
   </div>
-  <a href="#/ajouter" data-vue="ajouter" class="nav-ajout" aria-label="Ajouter une observation">
+  <a href="#/ajouter" data-vue="ajouter" class="nav-ajout" aria-label="Ajouter une observation" data-t-aria="Ajouter une observation">
     <span class="rond"><svg class="ic" aria-hidden="true"><use href="#i-plus"/></svg></span>
-    <span class="lbl">Nouvelle observation</span>
+    <span class="lbl" data-t="Nouvelle observation">Nouvelle observation</span>
   </a>
   <a href="#/catalogue" data-vue="catalogue">
     <svg class="ic" aria-hidden="true"><use href="#i-livre"/></svg>
-    <span class="lbl-court">Catalogue</span><span class="lbl-long">Catalogue</span>
+    <span class="lbl-court" data-t="Catalogue">Catalogue</span><span class="lbl-long" data-t="Catalogue">Catalogue</span>
   </a>
   <a href="#/observations" data-vue="observations">
     <svg class="ic" aria-hidden="true"><use href="#i-jumelles"/></svg>
-    <span class="lbl-court">Mes obs.</span><span class="lbl-long">Mes observations</span>
+    <span class="lbl-court" data-t="Mes obs.">Mes obs.</span><span class="lbl-long" data-t="Mes observations">Mes observations</span>
   </a>
   <a href="#/sortie" data-vue="sortie" class="nav-pc">
     <svg class="ic" aria-hidden="true"><use href="#i-chemin"/></svg>
-    <span class="lbl-court">Sortie</span><span class="lbl-long">Sortie</span>
+    <span class="lbl-court" data-t="Sortie">Sortie</span><span class="lbl-long" data-t="Sortie">Sortie</span>
   </a>
   <a href="#/saison" data-vue="saison" class="nav-pc">
     <svg class="ic" aria-hidden="true"><use href="#i-feuille"/></svg>
-    <span class="lbl-court">Saison</span><span class="lbl-long">Saison</span>
+    <span class="lbl-court" data-t="Saison">Saison</span><span class="lbl-long" data-t="Saison">Saison</span>
   </a>
   <a href="#/cibles" data-vue="cibles" class="nav-pc">
     <svg class="ic" aria-hidden="true"><use href="#i-cible"/></svg>
-    <span class="lbl-court">Cibles</span><span class="lbl-long">Mes cibles</span>
+    <span class="lbl-court" data-t="Cibles">Cibles</span><span class="lbl-long" data-t="Mes cibles">Mes cibles</span>
   </a>
   <a href="#/stats" data-vue="stats">
     <svg class="ic" aria-hidden="true"><use href="#i-stats"/></svg>
-    <span class="lbl-court">Stats</span><span class="lbl-long">Statistiques</span>
+    <span class="lbl-court" data-t="Stats">Stats</span><span class="lbl-long" data-t="Statistiques">Statistiques</span>
   </a>
   <a href="#/sauvegarde" data-vue="sauvegarde">
     <svg class="ic" aria-hidden="true"><use href="#i-sauvegarde"/></svg>
-    <span class="lbl-court">Sauvegarde</span><span class="lbl-long">Sauvegarde</span>
+    <span class="lbl-court" data-t="Sauvegarde">Sauvegarde</span><span class="lbl-long" data-t="Sauvegarde">Sauvegarde</span>
   </a>
   <div class="nav-pied">
-    <button type="button" class="btn-icone" data-action="langue" title="Langue des noms d'espèces"></button>
-    <button type="button" class="btn-icone" data-action="theme" title="Thème clair ou sombre"></button>
+    <button type="button" class="btn-icone" data-action="langue" title="Langue de l'appli" data-t-title="Langue de l'appli"></button>
+    <button type="button" class="btn-icone" data-action="theme" title="Thème clair ou sombre" data-t-title="Thème clair ou sombre"></button>
   </div>
 </nav>
 
 <main id="vue" tabindex="-1"></main>
 
 <dialog id="dlg-confirm" class="dlg-confirm"></dialog>
-<dialog id="dlg-espece" class="feuille" aria-label="Choisir une espèce"></dialog>
-<dialog id="visionneuse" class="visio" aria-label="Visionneuse de photos"></dialog>
+<dialog id="dlg-espece" class="feuille" aria-label="Choisir une espèce" data-t-aria="Choisir une espèce"></dialog>
+<dialog id="visionneuse" class="visio" aria-label="Visionneuse de photos" data-t-aria="Visionneuse de photos"></dialog>
 <div id="toast" class="toast" role="status" aria-live="polite"></div>
 <a id="pastille-sortie" class="pastille-sortie" href="#/sortie" hidden></a>
 <div id="maj" class="bandeau-maj" hidden>
-  <span>Nouvelle version de l'appli disponible</span>
-  <button type="button" class="btn btn-doux" id="maj-ok">Mettre à jour</button>
+  <span data-t="Nouvelle version de l'appli disponible">Nouvelle version de l'appli disponible</span>
+  <button type="button" class="btn btn-doux" id="maj-ok" data-t="Mettre à jour">Mettre à jour</button>
 </div>
 
 <noscript><p style="padding:24px">Cette appli a besoin de JavaScript pour fonctionner.</p></noscript>
 
 <script src="data/especes.js"></script>
+<script src="data/traductions.js"></script>
 <script src="data/photos.js"></script>
 <script src="js/utils.js"></script>
 <script src="js/db.js"></script>

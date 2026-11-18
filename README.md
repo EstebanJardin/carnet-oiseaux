@@ -19,6 +19,15 @@ Android comme une vraie appli, et s'utilise aussi sur PC.
   référence reste visible sur la fiche pour comparer. Les crédits (auteur, licence) sont
   sur chaque fiche, dans Sauvegarde > À propos et dans `images/especes/CREDITS.md`.
 
+### Nouveautés de la version 1.3
+
+- **Trois langues** : le bouton **FR / БГ / EN** (en haut à droite) passe toute l'appli en
+  français, en bulgare ou en anglais : menus, boutons, messages, dates, fiches et
+  descriptions des 147 espèces. Les noms d'oiseaux restent affichés dans les 3 langues,
+  celle choisie en premier. Tes propres textes (lieux, notes) ne sont jamais traduits.
+- **Export CSV** : les titres des colonnes et les libellés (groupe, comportement, météo)
+  suivent la langue de l'appli.
+
 ### Nouveautés de la version 1.2
 
 - **Mode sortie** (Mes obs. > Démarrer une sortie, ou appui long sur l'icône) : tu comptes
@@ -112,10 +121,15 @@ Tout est dans **`data/especes.js`**, modifiable avec n'importe quel éditeur de 
   groupe: "pics", presence: ["resident"], mois: TOUTE_ANNEE,
   habitats: ["foret", "village"], uicn: "LC",
   description: "…",
+  description_en: "…",               // la description en anglais
+  description_bg: "…",               // la description en bulgare
   aVerifier: true,                   // facultatif : affiche le badge « ? »
   note: "Ce qu'il faut vérifier"     // facultatif : affiché sur la fiche
+                                     // (traduite dans note_en et note_bg)
 }
 ```
+
+Si `description_en` ou `description_bg` manque, la fiche affiche la description française.
 
 - `presence` : `resident`, `estivant`, `hivernant`, `passage` (on peut en mettre plusieurs).
 - `mois` : mois de présence habituelle (1 = janvier). Sert au filtre « visibles en ce moment ».
@@ -123,6 +137,14 @@ Tout est dans **`data/especes.js`**, modifiable avec n'importe quel éditeur de 
 - Les **15 espèces** marquées `aVerifier: true` ont un nom bulgare, une présence locale ou
   un statut UICN incertain. Vérifie-les avec un guide de terrain bulgare ou auprès de la
   BSPB (Българско дружество за защита на птиците), puis retire le `aVerifier`.
+
+### Corriger une traduction
+
+Les textes de l'appli en anglais et en bulgare sont dans **`data/traductions.js`**, une ligne
+par texte : `"texte français": ["English", "Български"],`. Change seulement l'anglais ou le
+bulgare (jamais le français de gauche, c'est lui que l'appli cherche), garde les
+`{mots entre accolades}`, puis augmente la version (voir 5). Si une traduction manque,
+l'appli affiche le français.
 
 ### Changer une photo de référence
 
@@ -149,12 +171,15 @@ Tes observations ne sont pas touchées par une mise à jour.
 **Sauvegarde**, puis **Tableau des observations (.csv)**. Le fichier est en UTF-8 avec le
 séparateur `;`, et s'ouvre directement dans Excel ou LibreOffice (le cyrillique compris).
 
-Colonnes : `date ; heure ; espece_fr ; nom_latin ; nom_bulgare ; nom_anglais ; groupe ;
-nombre ; lieu ; latitude ; longitude ; precision_m ; comportement ; meteo ; temperature_c ;
-notes ; nb_photos ; id_observation`
+Colonnes (appli en français) : `date ; heure ; espece_fr ; nom_latin ; nom_bulgare ;
+nom_anglais ; groupe ; nombre ; lieu ; latitude ; longitude ; precision_m ; comportement ;
+meteo ; temperature_c ; notes ; nb_photos ; id_observation ; nb_sons ; id_sortie`
+
+Les titres des colonnes et les libellés (groupe, comportement, météo) suivent la langue de
+l'appli : passe-la en bulgare ou en anglais avant l'export si besoin.
 
 Si Smokinya utilise un autre modèle de colonnes, la fonction `csv()` se trouve dans
-`js/sauvegarde.js`.
+`js/sauvegarde.js` (les titres traduits sont dans `data/traductions.js`, « …||colonne CSV »).
 
 ## 7. Bon à savoir
 
@@ -187,7 +212,8 @@ index.html             page unique de l'appli
 manifest.webmanifest   nom, icônes, couleurs (installation)
 sw.js                  service worker : fonctionnement hors connexion
 css/style.css          styles (thèmes clair et sombre, mobile et PC)
-data/especes.js        le catalogue des espèces
+data/especes.js        le catalogue des espèces (descriptions en 3 langues)
+data/traductions.js    textes de l'appli en anglais et en bulgare
 data/photos.js         crédits des photos de référence
 images/especes/        photos de référence (fiche + mini/ vignettes, CREDITS.md)
 js/utils.js            outils (recherche, dates, réglages, espèces)

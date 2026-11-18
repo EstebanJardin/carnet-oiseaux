@@ -8,13 +8,14 @@
 
 (function (App) {
   const u = App.u;
+  const tr = App.tr;
 
   function lienCarte(lat, lon) {
     return 'https://www.openstreetmap.org/?mlat=' + lat + '&mlon=' + lon + '#map=15/' + lat + '/' + lon;
   }
   function coordonnees(lat, lon) {
-    return Math.abs(lat).toFixed(5).replace('.', ',') + (lat >= 0 ? ' N' : ' S') + ' · ' +
-      Math.abs(lon).toFixed(5).replace('.', ',') + (lon >= 0 ? ' E' : ' O');
+    return u.decimal(Math.abs(lat), 5) + ' ' + (lat >= 0 ? tr('N||latitude nord') : tr('S||latitude sud')) + ' · ' +
+      u.decimal(Math.abs(lon), 5) + ' ' + (lon >= 0 ? tr('E||longitude est') : tr('O||longitude ouest'));
   }
   function aUnePosition(o) { return o.lat !== null && o.lat !== undefined && o.lon !== null && o.lon !== undefined; }
 
@@ -28,11 +29,11 @@
       const e = App.esp.get(photo.especeId);
       const img = photo.miniature
         ? '<img src="' + App.photos.url(photo, 'miniature') + '" alt="' + u.esc(App.esp.nom(e)) + '" loading="lazy" decoding="async">'
-        : '<span class="sans-apercu">Aperçu indisponible</span>';
+        : '<span class="sans-apercu">' + tr('Aperçu indisponible') + '</span>';
       return '<div class="tuile">' +
-        '<button type="button" class="tuile-img" data-ph="' + photo.id + '" aria-label="Agrandir la photo">' + img + '</button>' +
-        '<button type="button" class="dl" data-dl="' + photo.id + '" aria-label="Télécharger l’original" title="Télécharger l’original">' + u.ic('telecharger') + '</button>' +
-        (photo.favori ? '<span class="fav-marque" title="Photo de couverture">' + u.ic('etoile') + '</span>' : '') +
+        '<button type="button" class="tuile-img" data-ph="' + photo.id + '" aria-label="' + u.esc(tr('Agrandir la photo')) + '">' + img + '</button>' +
+        '<button type="button" class="dl" data-dl="' + photo.id + '" aria-label="' + u.esc(tr('Télécharger l’original')) + '" title="' + u.esc(tr('Télécharger l’original')) + '">' + u.ic('telecharger') + '</button>' +
+        (photo.favori ? '<span class="fav-marque" title="' + u.esc(tr('Photo de couverture')) + '">' + u.ic('etoile') + '</span>' : '') +
         '<div class="tuile-leg">' +
         (opts.sansEspece ? '' : '<b>' + u.esc(App.esp.nom(e)) + '</b>') +
         '<small>' + u.dateCourte(obs.date) + (obs.lieu ? ' · ' + u.esc(obs.lieu) : '') + '</small>' +
@@ -47,18 +48,18 @@
       const meta = [];
       if (!opts.sansEspece) meta.push('<span>' + u.ic('calendrier') + u.dateCourte(o.date) + '</span>');
       if (o.lieu || aUnePosition(o)) {
-        meta.push('<span>' + u.ic('epingle') + (o.lieu ? u.esc(o.lieu) : 'Position GPS') +
-          (aUnePosition(o) ? ' <a href="' + lienCarte(o.lat, o.lon) + '" target="_blank" rel="noopener" title="Voir sur la carte (connexion nécessaire)" aria-label="Voir sur la carte">' + u.ic('carte') + '</a>' : '') +
+        meta.push('<span>' + u.ic('epingle') + (o.lieu ? u.esc(o.lieu) : tr('Position GPS')) +
+          (aUnePosition(o) ? ' <a href="' + lienCarte(o.lat, o.lon) + '" target="_blank" rel="noopener" title="' + u.esc(tr('Voir sur la carte (connexion nécessaire)')) + '" aria-label="' + u.esc(tr('Voir sur la carte')) + '">' + u.ic('carte') + '</a>' : '') +
           '</span>');
       }
       meta.push('<span>' + u.pluriel(o.nombre || 1, 'individu') + '</span>');
-      if (o.sortie) meta.push('<span>' + u.ic('chemin') + 'Sortie</span>');
+      if (o.sortie) meta.push('<span>' + u.ic('chemin') + tr('Sortie') + '</span>');
       const sons = App.donnees.sonsDe(c, o);
       if ((o.meteo && o.meteo.length) || (o.temperature !== null && o.temperature !== undefined && o.temperature !== '')) {
         const icone = o.meteo && o.meteo.length ? (App.METEOS.find(function (m) { return m[0] === o.meteo[0]; }) || [0, 0, 'soleil'])[2] : 'soleil';
         meta.push('<span>' + u.ic(icone) +
           (o.meteo || []).map(function (m) { return App.libelle(App.METEOS, m); }).join(', ') +
-          (o.temperature !== null && o.temperature !== undefined && o.temperature !== '' ? (o.meteo && o.meteo.length ? ' · ' : '') + String(o.temperature).replace('.', ',') + ' °C' : '') +
+          (o.temperature !== null && o.temperature !== undefined && o.temperature !== '' ? (o.meteo && o.meteo.length ? ' · ' : '') + u.nombre(o.temperature) + ' °C' : '') +
           '</span>');
       }
       const comportements = (o.comportements || []).map(function (k) {
@@ -75,13 +76,13 @@
         (comportements ? '<div class="tags">' + comportements + '</div>' : '') +
         (o.notes ? '<p class="obs-notes">' + u.esc(o.notes) + '</p>' : '') +
         (photos.length ? '<div class="mini-bande">' + photos.map(function (p) {
-          return '<button type="button" data-ph="' + p.id + '" aria-label="Agrandir la photo">' +
+          return '<button type="button" data-ph="' + p.id + '" aria-label="' + u.esc(tr('Agrandir la photo')) + '">' +
             (p.miniature ? '<img src="' + App.photos.url(p, 'miniature') + '" alt="" loading="lazy" decoding="async">' : '') + '</button>';
         }).join('') + '</div>' : '') +
         (sons.length ? '<div class="sons-ligne">' + sons.map(function (s) { return App.sons.puce(s, 'data-son'); }).join('') + '</div>' : '') +
         '<div class="obs-actions">' +
-        '<a class="btn btn-second btn-petit" href="#/modifier/' + encodeURIComponent(o.id) + '">' + u.ic('crayon') + 'Modifier</a>' +
-        '<button type="button" class="btn btn-danger-doux btn-petit" data-suppr="' + o.id + '">' + u.ic('poubelle') + 'Supprimer</button>' +
+        '<a class="btn btn-second btn-petit" href="#/modifier/' + encodeURIComponent(o.id) + '">' + u.ic('crayon') + tr('Modifier') + '</a>' +
+        '<button type="button" class="btn btn-danger-doux btn-petit" data-suppr="' + o.id + '">' + u.ic('poubelle') + tr('Supprimer') + '</button>' +
         '</div></article>';
     },
 
@@ -123,16 +124,16 @@
         const s = ev.target.closest('[data-suppr]');
         if (s) {
           const ok = await App.ui.confirmer({
-            titre: 'Supprimer cette observation ?',
-            texte: 'L’observation et ses photos seront effacées de cet appareil. Cette action est définitive.',
-            ok: 'Supprimer', danger: true
+            titre: tr('Supprimer cette observation ?'),
+            texte: tr('L’observation et ses photos seront effacées de cet appareil. Cette action est définitive.'),
+            ok: tr('Supprimer'), danger: true
           });
           if (!ok) return;
           try {
             await App.donnees.supprimerObservation(s.dataset.suppr);
-            App.ui.toast('Observation supprimée');
+            App.ui.toast(tr('Observation supprimée'));
             App.rafraichir();
-          } catch (e) { App.ui.toast('Suppression impossible : ' + e.message, { erreur: true }); }
+          } catch (e) { App.ui.toast(tr('Suppression impossible : {erreur}', { erreur: e.message }), { erreur: true }); }
         }
       });
     }
@@ -160,7 +161,7 @@
         return '<a class="bouton-sortie' + (sortieEnCours ? ' en-cours' : '') + (cls ? ' ' + cls : '') + '" href="#/sortie"' +
           (cls ? ' aria-hidden="true" tabindex="-1"' : '') + '>' +
           (sortieEnCours ? '<span class="point" aria-hidden="true"></span>' : u.ic('chemin')) +
-          '<span>' + (sortieEnCours ? 'Reprendre' : 'Sortie') + '</span></a>';
+          '<span>' + (sortieEnCours ? tr('Reprendre') : tr('Sortie')) + '</span></a>';
       };
       function brancherFlottant() {
         const tete = el.querySelector('.entete');
@@ -178,32 +179,32 @@
       }
 
       if (!c.obs.length) {
-        el.innerHTML = App.ui.entete({ titre: 'Mes observations', actions: boutonSortie() }) +
+        el.innerHTML = App.ui.entete({ titre: tr('Mes observations'), actions: boutonSortie() }) +
           '<div class="vide"><svg class="ph-oiseau" aria-hidden="true"><use href="#i-oiseau"/></svg>' +
-          '<h2>Ton carnet t’attend</h2>' +
-          '<p>Ajoute ta première observation : l’espèce, le lieu, le nombre d’individus et tes photos.</p>' +
-          '<a class="btn btn-prim" href="#/ajouter">' + u.ic('plus') + 'Première observation</a></div>';
+          '<h2>' + tr('Ton carnet t’attend') + '</h2>' +
+          '<p>' + tr('Ajoute ta première observation : l’espèce, le lieu, le nombre d’individus et tes photos.') + '</p>' +
+          '<a class="btn btn-prim" href="#/ajouter">' + u.ic('plus') + tr('Première observation') + '</a></div>';
         return;
       }
 
       const surPC = window.matchMedia('(min-width: 900px)').matches;
       let mode = App.prefs.get('modeObs', '') || (surPC ? 'galerie' : 'especes');
-      const MODES = [['especes', 'Espèces', 'couches'], ['galerie', 'Galerie', 'grille'], ['journal', 'Journal', 'liste']];
+      const MODES = [['especes', /*tr*/'Espèces', 'couches'], ['galerie', /*tr*/'Galerie', 'grille'], ['journal', /*tr*/'Journal', 'liste']];
 
       el.innerHTML =
         App.ui.entete({
-          titre: 'Mes observations',
+          titre: tr('Mes observations'),
           sous: u.pluriel(resume.size, 'espèce') + ' · ' + u.pluriel(c.obs.length, 'observation') + ' · ' + u.pluriel(nbPhotos, 'photo'),
           actions: boutonSortie()
         }) + rappel +
         '<div class="outils-obs">' +
-        '<div class="seg" role="group" aria-label="Type d’affichage">' +
+        '<div class="seg" role="group" aria-label="' + u.esc(tr('Type d’affichage')) + '">' +
         MODES.map(function (m) {
-          return '<button type="button" data-mode="' + m[0] + '" aria-pressed="' + (mode === m[0]) + '">' + u.ic(m[2]) + m[1] + '</button>';
+          return '<button type="button" data-mode="' + m[0] + '" aria-pressed="' + (mode === m[0]) + '">' + u.ic(m[2]) + tr(m[1]) + '</button>';
         }).join('') + '</div>' +
         '<label class="recherche" style="flex:1 1 220px;height:50px">' + u.ic('recherche') +
-        '<span class="sr-only">Filtrer par espèce</span>' +
-        '<input type="search" id="obs-q" placeholder="Filtrer par espèce…" autocomplete="off" value="' + u.esc(filtreObs) + '"></label>' +
+        '<span class="sr-only">' + tr('Filtrer par espèce') + '</span>' +
+        '<input type="search" id="obs-q" placeholder="' + u.esc(tr('Filtrer par espèce…')) + '" autocomplete="off" value="' + u.esc(filtreObs) + '"></label>' +
         '</div>' +
         '<div id="obs-contenu"></div>';
 
@@ -226,7 +227,7 @@
             return '<details class="acc-item" data-esp="' + u.esc(id) + '">' +
               '<summary>' + App.ui.vignette(r.couverture, '', id) +
               '<div class="acc-txt"><div class="acc-nom">' + u.esc(App.esp.nom(e, langue)) + '</div>' +
-              '<div class="acc-info">' + u.pluriel(r.nb, 'obs.', 'obs.') + ' · ' + u.pluriel(r.photos.length, 'photo') +
+              '<div class="acc-info">' + u.pluriel(r.nb, 'obs.', 'obs.||pluriel') + ' · ' + u.pluriel(r.photos.length, 'photo') +
               ' · ' + u.dateCourte(r.derniere.date) + '</div></div>' +
               u.ic('chevron', 'chev') + '</summary>' +
               '<div class="acc-corps"></div></details>';
@@ -251,7 +252,7 @@
               '<div class="galerie">' + g.items.map(function (x) { return App.rendu.tuile(x.photo, x.obs); }).join('') + '</div>';
           }).join('');
           if (!html && !filtreObs) {
-            html = '<div class="vide"><h2>Pas encore de photo</h2><p>Ajoute des photos à tes observations : elles apparaîtront ici en galerie.</p></div>';
+            html = '<div class="vide"><h2>' + tr('Pas encore de photo') + '</h2><p>' + tr('Ajoute des photos à tes observations : elles apparaîtront ici en galerie.') + '</p></div>';
           }
         } else {
           const obs = c.obs.filter(function (o) { return garde(o.especeId); });
@@ -264,7 +265,7 @@
           if (!obs.length) html = '';
         }
 
-        zone.innerHTML = html || '<div class="vide"><h2>Rien à afficher</h2><p>Aucune observation ne correspond à « ' + u.esc(filtreObs) + ' ».</p></div>';
+        zone.innerHTML = html || '<div class="vide"><h2>' + tr('Rien à afficher') + '</h2><p>' + tr('Aucune observation ne correspond à « {q} ».', { q: u.esc(filtreObs) }) + '</p></div>';
 
         // Accordéon : contenu préparé à la première ouverture
         zone.querySelectorAll('details.acc-item').forEach(function (d) {
@@ -276,15 +277,15 @@
             d.querySelector('.acc-corps').innerHTML =
               (r.photos.length
                 ? '<div class="bande">' + r.photos.map(function (x) { return App.rendu.tuile(x.photo, x.obs, { sansEspece: true }); }).join('') + '</div>'
-                : '<p class="muet petit">Pas de photo pour cette espèce.</p>') +
+                : '<p class="muet petit">' + tr('Pas de photo pour cette espèce.') + '</p>') +
               '<ul class="acc-obs">' + r.obs.map(function (o) {
                 return '<li><span class="q">' + u.dateCourte(o.date) + (o.heure ? ' · ' + u.esc(o.heure) : '') +
-                  (o.lieu ? ' · ' + u.esc(o.lieu) : '') + ' · ' + u.pluriel(o.nombre || 1, 'ind.', 'ind.') + '</span>' +
-                  '<a class="btn btn-second btn-petit" href="#/modifier/' + encodeURIComponent(o.id) + '" aria-label="Modifier l’observation du ' + u.dateLongue(o.date) + '">' + u.ic('crayon') + '</a></li>';
+                  (o.lieu ? ' · ' + u.esc(o.lieu) : '') + ' · ' + u.pluriel(o.nombre || 1, 'ind.', 'ind.||pluriel') + '</span>' +
+                  '<a class="btn btn-second btn-petit" href="#/modifier/' + encodeURIComponent(o.id) + '" aria-label="' + u.esc(tr('Modifier l’observation du {date}', { date: u.dateLongue(o.date) })) + '">' + u.ic('crayon') + '</a></li>';
               }).join('') + '</ul>' +
               '<div class="acc-pied">' +
-              '<a class="lien-btn" href="#/espece/' + encodeURIComponent(id) + '">Voir la fiche complète</a>' +
-              '<a class="btn btn-doux btn-petit" href="#/ajouter/' + encodeURIComponent(id) + '">' + u.ic('plus') + 'Nouvelle obs.</a>' +
+              '<a class="lien-btn" href="#/espece/' + encodeURIComponent(id) + '">' + tr('Voir la fiche complète') + '</a>' +
+              '<a class="btn btn-doux btn-petit" href="#/ajouter/' + encodeURIComponent(id) + '">' + u.ic('plus') + tr('Nouvelle obs.') + '</a>' +
               '</div>';
           });
         });
@@ -335,9 +336,9 @@
 
     d.innerHTML =
       '<div class="feuille-haut">' +
-      '<label class="recherche">' + u.ic('recherche') + '<span class="sr-only">Rechercher une espèce</span>' +
-      '<input type="search" placeholder="Nom français, bulgare, anglais, latin…" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" enterkeyhint="search"></label>' +
-      '<button type="button" class="btn-icone" data-fermer aria-label="Fermer">' + u.ic('x') + '</button>' +
+      '<label class="recherche">' + u.ic('recherche') + '<span class="sr-only">' + tr('Rechercher une espèce') + '</span>' +
+      '<input type="search" placeholder="' + u.esc(tr('Nom français, bulgare, anglais, latin…')) + '" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" enterkeyhint="search"></label>' +
+      '<button type="button" class="btn-icone" data-fermer aria-label="' + u.esc(tr('Fermer')) + '">' + u.ic('x') + '</button>' +
       '</div><div class="feuille-liste"></div>';
     const champ = d.querySelector('input');
     const zone = d.querySelector('.feuille-liste');
@@ -346,19 +347,19 @@
       const r = resume.get(e.id);
       return '<button type="button" class="option-esp" data-id="' + u.esc(e.id) + '">' + App.ui.vignette(r && r.couverture, '', e.id) +
         '<span class="oe-txt"><span class="oe-nom">' + u.esc(App.esp.nom(e, langue)) + (r ? ' <span class="tag tag-ok">✓</span>' : '') +
-        (opts.cibles && App.cibles.contient(e.id) ? ' <span class="tag tag-cible">' + u.ic('cible') + 'Cible</span>' : '') + '</span>' +
+        (opts.cibles && App.cibles.contient(e.id) ? ' <span class="tag tag-cible">' + u.ic('cible') + tr('Cible') + '</span>' : '') + '</span>' +
         '<span class="oe-autre" style="display:block">' + u.esc(App.esp.autresNoms(e, langue).join(' · ')) + ' · <i>' + u.esc(e.la) + '</i></span></span></button>';
     }
     function rendre() {
       const q = champ.value;
       if (!u.norm(q)) {
-        zone.innerHTML = (recentes.length ? '<h3>Observées récemment</h3>' + recentes.map(option).join('') : '') +
-          '<h3>Toutes les espèces</h3>' + toutes.map(option).join('');
+        zone.innerHTML = (recentes.length ? '<h3>' + tr('Observées récemment') + '</h3>' + recentes.map(option).join('') : '') +
+          '<h3>' + tr('Toutes les espèces') + '</h3>' + toutes.map(option).join('');
       } else {
         const f = App.esp.filtre(q);
         const res = toutes.filter(f);
         zone.innerHTML = res.length ? res.map(option).join('')
-          : '<div class="vide" style="padding:24px 8px"><p>Aucune espèce ne correspond. Vérifie l’orthographe, ou ajoute l’espèce dans <code>data/especes.js</code>.</p></div>';
+          : '<div class="vide" style="padding:24px 8px"><p>' + tr('Aucune espèce ne correspond. Vérifie l’orthographe, ou ajoute l’espèce dans {fichier}.', { fichier: '<code>data/especes.js</code>' }) + '</p></div>';
       }
     }
     champ.addEventListener('input', u.debounce(rendre, 60));
@@ -416,70 +417,70 @@
 
     el.innerHTML =
       App.ui.entete({
-        titre: o ? 'Modifier l’observation' : 'Nouvelle observation',
+        titre: o ? tr('Modifier l’observation') : tr('Nouvelle observation'),
         retour: o ? '#/espece/' + encodeURIComponent(o.especeId) : '#/catalogue',
         sansOutils: true
       }) +
       '<form class="form" id="form-obs" novalidate>' +
-      '<div class="champ"><span class="etiq" id="lbl-espece">Espèce</span>' +
+      '<div class="champ"><span class="etiq" id="lbl-espece">' + tr('Espèce') + '</span>' +
       '<button type="button" class="choix-espece" id="f-espece"></button>' +
-      '<span class="erreur-champ" id="err-espece" hidden>Choisis d’abord une espèce.</span></div>' +
+      '<span class="erreur-champ" id="err-espece" hidden>' + tr('Choisis d’abord une espèce.') + '</span></div>' +
 
       '<div class="ligne-2">' +
-      '<div class="champ"><label for="f-date">Date</label><input type="date" class="entree" id="f-date" required value="' + (o ? o.date : u.dateISO()) + '"></div>' +
-      '<div class="champ"><label for="f-heure">Heure</label><input type="time" class="entree" id="f-heure" value="' + (o ? u.esc(o.heure || '') : u.heureHM()) + '"></div>' +
+      '<div class="champ"><label for="f-date">' + tr('Date') + '</label><input type="date" class="entree" id="f-date" required value="' + (o ? o.date : u.dateISO()) + '"></div>' +
+      '<div class="champ"><label for="f-heure">' + tr('Heure') + '</label><input type="time" class="entree" id="f-heure" value="' + (o ? u.esc(o.heure || '') : u.heureHM()) + '"></div>' +
       '</div>' +
 
-      '<div class="champ"><label for="f-lieu">Lieu</label>' +
-      '<div class="ligne-lieu"><input type="text" class="entree" id="f-lieu" list="lieux-connus" autocomplete="off" placeholder="Rivière Stryama, sortie du village…" value="' + u.esc(o ? o.lieu || '' : '') + '">' +
-      '<button type="button" class="btn btn-doux btn-gps" id="f-gps" title="Utiliser le GPS du téléphone">' + u.ic('position') + 'Ma position</button></div>' +
+      '<div class="champ"><label for="f-lieu">' + tr('Lieu') + '</label>' +
+      '<div class="ligne-lieu"><input type="text" class="entree" id="f-lieu" list="lieux-connus" autocomplete="off" placeholder="' + u.esc(tr('Rivière Stryama, sortie du village…')) + '" value="' + u.esc(o ? o.lieu || '' : '') + '">' +
+      '<button type="button" class="btn btn-doux btn-gps" id="f-gps" title="' + u.esc(tr('Utiliser le GPS du téléphone')) + '">' + u.ic('position') + tr('Ma position') + '</button></div>' +
       '<datalist id="lieux-connus">' + lieux.map(function (l) { return '<option value="' + u.esc(l) + '">'; }).join('') + '</datalist>' +
       '<div class="gps-info" id="f-gps-info"></div></div>' +
 
-      '<div class="champ"><label for="f-nombre">Nombre d’individus</label>' +
-      '<div class="stepper"><button type="button" data-pas="-1" aria-label="Un individu de moins">−</button>' +
+      '<div class="champ"><label for="f-nombre">' + tr('Nombre d’individus') + '</label>' +
+      '<div class="stepper"><button type="button" data-pas="-1" aria-label="' + u.esc(tr('Un individu de moins')) + '">−</button>' +
       '<input type="number" class="entree" id="f-nombre" min="1" step="1" inputmode="numeric" value="' + (o ? (o.nombre || 1) : 1) + '">' +
-      '<button type="button" data-pas="1" aria-label="Un individu de plus">+</button></div></div>' +
+      '<button type="button" data-pas="1" aria-label="' + u.esc(tr('Un individu de plus')) + '">+</button></div></div>' +
 
-      '<div class="champ"><span class="etiq">Comportement</span><div class="puces" id="f-comp" role="group" aria-label="Comportement">' +
+      '<div class="champ"><span class="etiq">' + tr('Comportement') + '</span><div class="puces" id="f-comp" role="group" aria-label="' + u.esc(tr('Comportement')) + '">' +
       App.COMPORTEMENTS.map(function (k) {
         const on = etat.comportements.indexOf(k[0]) !== -1;
-        return '<button type="button" class="puce' + (on ? ' on' : '') + '" data-comp="' + k[0] + '" aria-pressed="' + on + '">' + u.esc(k[1]) + '</button>';
+        return '<button type="button" class="puce' + (on ? ' on' : '') + '" data-comp="' + k[0] + '" aria-pressed="' + on + '">' + u.esc(tr(k[1])) + '</button>';
       }).join('') + '</div></div>' +
 
-      '<div class="champ"><span class="etiq">Météo</span><div class="puces" id="f-meteo" role="group" aria-label="Météo">' +
+      '<div class="champ"><span class="etiq">' + tr('Météo') + '</span><div class="puces" id="f-meteo" role="group" aria-label="' + u.esc(tr('Météo')) + '">' +
       App.METEOS.map(function (k) {
         const on = etat.meteo.indexOf(k[0]) !== -1;
-        return '<button type="button" class="puce' + (on ? ' on' : '') + '" data-meteo="' + k[0] + '" aria-pressed="' + on + '">' + u.ic(k[2]) + u.esc(k[1]) + '</button>';
+        return '<button type="button" class="puce' + (on ? ' on' : '') + '" data-meteo="' + k[0] + '" aria-pressed="' + on + '">' + u.ic(k[2]) + u.esc(tr(k[1])) + '</button>';
       }).join('') + '</div>' +
-      '<div style="display:flex;align-items:center;gap:12px;margin-top:4px"><label for="f-temp" class="petit muet">Température (°C, facultatif)</label>' +
+      '<div style="display:flex;align-items:center;gap:12px;margin-top:4px"><label for="f-temp" class="petit muet">' + tr('Température (°C, facultatif)') + '</label>' +
       '<input type="number" class="entree" id="f-temp" inputmode="decimal" step="0.5" style="width:110px" value="' +
       (o && o.temperature !== null && o.temperature !== undefined ? u.esc(o.temperature) : '') + '"></div></div>' +
 
-      '<div class="champ"><label for="f-notes">Notes</label>' +
-      '<textarea class="entree" id="f-notes" placeholder="Plumage, chant, comportement, réglages photo…">' + u.esc(o ? o.notes || '' : '') + '</textarea></div>' +
+      '<div class="champ"><label for="f-notes">' + tr('Notes') + '</label>' +
+      '<textarea class="entree" id="f-notes" placeholder="' + u.esc(tr('Plumage, chant, comportement, réglages photo…')) + '">' + u.esc(o ? o.notes || '' : '') + '</textarea></div>' +
 
-      '<div class="champ"><span class="etiq">Photos</span>' +
+      '<div class="champ"><span class="etiq">' + tr('Photos') + '</span>' +
       '<div class="boutons-photo">' +
-      '<label class="btn btn-second">' + u.ic('photo') + 'Appareil photo<input type="file" id="f-cam" accept="image/*" capture="environment" hidden></label>' +
-      '<label class="btn btn-second">' + u.ic('galerie') + 'Galerie<input type="file" id="f-gal" accept="image/*" multiple hidden></label>' +
+      '<label class="btn btn-second">' + u.ic('photo') + tr('Appareil photo') + '<input type="file" id="f-cam" accept="image/*" capture="environment" hidden></label>' +
+      '<label class="btn btn-second">' + u.ic('galerie') + tr('Galerie') + '<input type="file" id="f-gal" accept="image/*" multiple hidden></label>' +
       '</div>' +
-      '<p class="aide">L’original est gardé intact pour le téléchargement ; une copie allégée sert à l’affichage. Si la photo contient sa date ou sa position (EXIF), je les reprends.</p>' +
+      '<p class="aide">' + tr('L’original est gardé intact pour le téléchargement ; une copie allégée sert à l’affichage. Si la photo contient sa date ou sa position (EXIF), je les reprends.') + '</p>' +
       '<div class="photos-form" id="f-photos"></div></div>' +
 
-      '<div class="champ"><span class="etiq">Chants et cris</span>' +
+      '<div class="champ"><span class="etiq">' + tr('Chants et cris') + '</span>' +
       '<div class="boutons-photo">' +
-      (App.sons.disponible() ? '<button type="button" class="btn btn-second" id="f-micro">' + u.ic('micro') + 'Enregistrer</button>' : '') +
-      '<label class="btn btn-second">' + u.ic('importer') + 'Fichier son<input type="file" id="f-son" accept="audio/*" hidden></label>' +
+      (App.sons.disponible() ? '<button type="button" class="btn btn-second" id="f-micro">' + u.ic('micro') + tr('Enregistrer||son') + '</button>' : '') +
+      '<label class="btn btn-second">' + u.ic('importer') + tr('Fichier son') + '<input type="file" id="f-son" accept="audio/*" hidden></label>' +
       '</div>' +
-      '<p class="aide">Pour un oiseau qui chante sans se montrer : enregistre-le (3 min max), tu pourras le réécouter ou le faire identifier plus tard.</p>' +
+      '<p class="aide">' + tr('Pour un oiseau qui chante sans se montrer : enregistre-le (3 min max), tu pourras le réécouter ou le faire identifier plus tard.') + '</p>' +
       '<div class="sons-form" id="f-sons"></div></div>' +
 
-      (o ? '<div class="zone-danger"><button type="button" class="btn btn-danger-doux" id="f-suppr">' + u.ic('poubelle') + 'Supprimer cette observation</button></div>' : '') +
+      (o ? '<div class="zone-danger"><button type="button" class="btn btn-danger-doux" id="f-suppr">' + u.ic('poubelle') + tr('Supprimer cette observation') + '</button></div>' : '') +
       '</form>' +
       '<div class="barre-enreg">' +
-      '<a class="btn btn-second" href="' + (o ? '#/espece/' + encodeURIComponent(o.especeId) : '#/catalogue') + '" data-action="retour">Annuler</a>' +
-      '<button type="button" class="btn btn-prim" id="f-enreg">' + u.ic('check') + 'Enregistrer</button>' +
+      '<a class="btn btn-second" href="' + (o ? '#/espece/' + encodeURIComponent(o.especeId) : '#/catalogue') + '" data-action="retour">' + tr('Annuler') + '</a>' +
+      '<button type="button" class="btn btn-prim" id="f-enreg">' + u.ic('check') + tr('Enregistrer') + '</button>' +
       '</div>';
 
     const $ = function (s) { return el.querySelector(s); };
@@ -489,7 +490,7 @@
 
     function modifie() { App.formulaireModifie = true; }
     App.garde = function () {
-      return !App.formulaireModifie || window.confirm('Quitter sans enregistrer cette observation ?');
+      return !App.formulaireModifie || window.confirm(tr('Quitter sans enregistrer cette observation ?'));
     };
     App.surNettoyage(function () {
       App.formulaireModifie = false;
@@ -500,11 +501,11 @@
     function majEspece() {
       const b = $('#f-espece');
       b.setAttribute('aria-label', etat.especeId
-        ? 'Espèce : ' + App.esp.nom(App.esp.get(etat.especeId), langue) + ' (changer)'
-        : 'Choisir l’espèce');
+        ? tr('Espèce : {nom} (changer)', { nom: App.esp.nom(App.esp.get(etat.especeId), langue) })
+        : tr('Choisir l’espèce'));
       if (!etat.especeId) {
         b.classList.add('vide-choix');
-        b.innerHTML = u.ic('recherche') + '<span class="ce-txt"><span class="ce-nom">Choisir l’espèce…</span><span class="ce-autre" style="display:block">Recherche par nom français, bulgare, anglais ou latin</span></span>';
+        b.innerHTML = u.ic('recherche') + '<span class="ce-txt"><span class="ce-nom">' + tr('Choisir l’espèce…') + '</span><span class="ce-autre" style="display:block">' + tr('Recherche par nom français, bulgare, anglais ou latin') + '</span></span>';
         return;
       }
       const e = App.esp.get(etat.especeId);
@@ -513,7 +514,7 @@
       b.innerHTML = App.ui.vignette(r && r.couverture, '', etat.especeId) +
         '<span class="ce-txt"><span class="ce-nom" style="display:block">' + u.esc(App.esp.nom(e, langue)) + '</span>' +
         '<span class="ce-autre" style="display:block">' + u.esc(App.esp.autresNoms(e, langue).join(' · ')) + '</span></span>' +
-        '<span class="lien-btn">Changer</span>';
+        '<span class="lien-btn">' + tr('Changer') + '</span>';
       $('#err-espece').hidden = true;
     }
     $('#f-espece').addEventListener('click', async function () {
@@ -530,16 +531,16 @@
     function majGps() {
       if (etat.lat === null) { infoGps.innerHTML = ''; return; }
       infoGps.innerHTML = u.ic('epingle') + '<span>' + coordonnees(etat.lat, etat.lon) +
-        (etat.precision ? ' (± ' + etat.precision + ' m)' : '') + (etat.sourceGps === 'photo' ? ' · d’après la photo' : '') + '</span>' +
-        '<a class="lien-btn" href="' + lienCarte(etat.lat, etat.lon) + '" target="_blank" rel="noopener">Voir la carte</a>' +
-        '<button type="button" class="lien-btn" id="f-gps-effacer">Effacer</button>';
+        (etat.precision ? ' (± ' + etat.precision + ' m)' : '') + (etat.sourceGps === 'photo' ? ' · ' + tr('d’après la photo') : '') + '</span>' +
+        '<a class="lien-btn" href="' + lienCarte(etat.lat, etat.lon) + '" target="_blank" rel="noopener">' + tr('Voir la carte') + '</a>' +
+        '<button type="button" class="lien-btn" id="f-gps-effacer">' + tr('Effacer') + '</button>';
       $('#f-gps-effacer').addEventListener('click', function () {
         etat.lat = etat.lon = etat.precision = null; modifie(); majGps();
       });
     }
     $('#f-gps').addEventListener('click', function () {
-      if (!navigator.geolocation) { App.ui.toast('GPS non disponible sur cet appareil', { erreur: true }); return; }
-      infoGps.innerHTML = '<span class="rond-charge" aria-hidden="true"></span><span>Recherche de ta position… (à découvert, c’est plus rapide)</span>';
+      if (!navigator.geolocation) { App.ui.toast(tr('GPS non disponible sur cet appareil'), { erreur: true }); return; }
+      infoGps.innerHTML = '<span class="rond-charge" aria-hidden="true"></span><span>' + tr('Recherche de ta position… (à découvert, c’est plus rapide)') + '</span>';
       navigator.geolocation.getCurrentPosition(function (pos) {
         etat.lat = Math.round(pos.coords.latitude * 1e6) / 1e6;
         etat.lon = Math.round(pos.coords.longitude * 1e6) / 1e6;
@@ -549,8 +550,8 @@
         majGps();
       }, function (err) {
         infoGps.innerHTML = '<span class="erreur-champ">' + (err.code === 1
-          ? 'Accès à la position refusé : autorise-le dans les réglages du navigateur.'
-          : 'Position introuvable pour l’instant. Réessaie à découvert.') + '</span>';
+          ? tr('Accès à la position refusé : autorise-le dans les réglages du navigateur.')
+          : tr('Position introuvable pour l’instant. Réessaie à découvert.')) + '</span>';
       }, { enableHighAccuracy: true, timeout: 30000, maximumAge: 30000 });
     });
     majGps();
@@ -583,8 +584,8 @@
     function rendrePhotos() {
       zonePhotos.innerHTML =
         etat.photosGardees.map(function (p) {
-          return '<div class="photo-form">' + (p.miniature ? '<img src="' + App.photos.url(p, 'miniature') + '" alt="">' : '<div class="etat">Aperçu indisponible</div>') +
-            '<button type="button" class="suppr" data-retirer-ex="' + p.id + '" aria-label="Retirer cette photo">' + u.ic('x') + '</button></div>';
+          return '<div class="photo-form">' + (p.miniature ? '<img src="' + App.photos.url(p, 'miniature') + '" alt="">' : '<div class="etat">' + tr('Aperçu indisponible') + '</div>') +
+            '<button type="button" class="suppr" data-retirer-ex="' + p.id + '" aria-label="' + u.esc(tr('Retirer cette photo')) + '">' + u.ic('x') + '</button></div>';
         }).join('') +
         etat.nouvelles.map(function (n) {
           let contenu;
@@ -592,12 +593,12 @@
             if (!n.url) n.url = URL.createObjectURL(n.res.miniature);
             contenu = '<img src="' + n.url + '" alt="">';
           } else if (n.res || n.erreur) {
-            contenu = '<div class="etat">Aperçu impossible<br>(l’original sera gardé)</div>';
+            contenu = '<div class="etat">' + tr('Aperçu impossible') + '<br>' + tr('(l’original sera gardé)') + '</div>';
           } else {
-            contenu = '<div class="etat"><span class="rond-charge" aria-label="Traitement en cours"></span></div>';
+            contenu = '<div class="etat"><span class="rond-charge" aria-label="' + u.esc(tr('Traitement en cours')) + '"></span></div>';
           }
           return '<div class="photo-form">' + contenu +
-            '<button type="button" class="suppr" data-retirer-nv="' + n.cle + '" aria-label="Retirer cette photo">' + u.ic('x') + '</button></div>';
+            '<button type="button" class="suppr" data-retirer-nv="' + n.cle + '" aria-label="' + u.esc(tr('Retirer cette photo')) + '">' + u.ic('x') + '</button></div>';
         }).join('');
     }
     function appliquerExif(exif) {
@@ -607,19 +608,19 @@
         champDate.value = exif.date;
         if (exif.heure) champHeure.value = exif.heure;
         exifApplique = true;
-        msgs.push('date et heure');
+        msgs.push(tr('date et heure'));
       }
       if (exif.lat !== undefined && etat.lat === null) {
         etat.lat = exif.lat; etat.lon = exif.lon; etat.precision = null; etat.sourceGps = 'photo';
         majGps();
-        msgs.push('position');
+        msgs.push(tr('position'));
       }
-      if (msgs.length) App.ui.toast('Reprises de la photo : ' + msgs.join(' et '));
+      if (msgs.length) App.ui.toast(tr('Reprises de la photo : {quoi}', { quoi: msgs.length > 1 ? tr('date, heure et position') : msgs[0] }));
     }
     function ajouterFichiers(fichiers) {
       Array.from(fichiers || []).forEach(function (f) {
         if (!/^image\//.test(f.type) && !/\.(jpe?g|png|webp|heic|heif|gif|avif)$/i.test(f.name)) {
-          App.ui.toast('« ' + f.name + ' » n’est pas une image', { erreur: true });
+          App.ui.toast(tr('« {nom} » n’est pas une image', { nom: f.name }), { erreur: true });
           return;
         }
         const n = { cle: u.uid('n'), fichier: f, res: null, erreur: null, url: null };
@@ -668,13 +669,13 @@
       zoneSons.innerHTML =
         etat.sonsGardes.map(function (s) {
           return '<div class="son-form">' + App.sons.puce(s, 'data-ecoute-ex') +
-            '<button type="button" class="btn-icone" data-dl-son="' + s.id + '" aria-label="Télécharger ce son">' + u.ic('telecharger') + '</button>' +
-            '<button type="button" class="btn-icone" data-retirer-son-ex="' + s.id + '" aria-label="Retirer ce son">' + u.ic('x') + '</button></div>';
+            '<button type="button" class="btn-icone" data-dl-son="' + s.id + '" aria-label="' + u.esc(tr('Télécharger ce son')) + '">' + u.ic('telecharger') + '</button>' +
+            '<button type="button" class="btn-icone" data-retirer-son-ex="' + s.id + '" aria-label="' + u.esc(tr('Retirer ce son')) + '">' + u.ic('x') + '</button></div>';
         }).join('') +
         etat.nouveauxSons.map(function (s) {
           return '<div class="son-form">' + App.sons.puce(s, 'data-ecoute-nv') +
-            '<span class="muet petit">nouveau</span>' +
-            '<button type="button" class="btn-icone" data-retirer-son-nv="' + s.id + '" aria-label="Retirer ce son">' + u.ic('x') + '</button></div>';
+            '<span class="muet petit">' + tr('nouveau') + '</span>' +
+            '<button type="button" class="btn-icone" data-retirer-son-nv="' + s.id + '" aria-label="' + u.esc(tr('Retirer ce son')) + '">' + u.ic('x') + '</button></div>';
         }).join('');
     }
     async function finirEnregistrement() {
@@ -682,7 +683,7 @@
       const ctrl = enregistrement;
       enregistrement = null;
       const res = await ctrl.arreter();
-      if (btnMicro) { btnMicro.classList.remove('enregistre'); btnMicro.innerHTML = u.ic('micro') + 'Enregistrer'; }
+      if (btnMicro) { btnMicro.classList.remove('enregistre'); btnMicro.innerHTML = u.ic('micro') + tr('Enregistrer||son'); }
       if (res.blob.size) {
         etat.nouveauxSons.push({ id: u.uid('n'), blob: res.blob, type: res.type, duree: res.duree, nomOriginal: 'chant.' + App.sons.extension(res.type) });
         modifie();
@@ -694,18 +695,18 @@
       try {
         App.sons.arreter();
         btnMicro.classList.add('enregistre');
-        btnMicro.innerHTML = u.ic('stop') + 'Arrêter · 0:00';
+        btnMicro.innerHTML = u.ic('stop') + tr('Arrêter') + ' · 0:00';
         enregistrement = await App.sons.enregistrer(function (s) {
           if (s >= App.sons.DUREE_MAX) { finirEnregistrement(); return; }
-          if (enregistrement) btnMicro.innerHTML = u.ic('stop') + 'Arrêter · ' + App.sons.format(s);
+          if (enregistrement) btnMicro.innerHTML = u.ic('stop') + tr('Arrêter') + ' · ' + App.sons.format(s);
         });
       } catch (e) {
         enregistrement = null;
         btnMicro.classList.remove('enregistre');
-        btnMicro.innerHTML = u.ic('micro') + 'Enregistrer';
+        btnMicro.innerHTML = u.ic('micro') + tr('Enregistrer||son');
         App.ui.toast(e && e.name === 'NotAllowedError'
-          ? 'Accès au micro refusé : autorise-le dans les réglages du navigateur.'
-          : 'Micro indisponible : ' + (e && e.message ? e.message : e), { erreur: true });
+          ? tr('Accès au micro refusé : autorise-le dans les réglages du navigateur.')
+          : tr('Micro indisponible : {erreur}', { erreur: e && e.message ? e.message : e }), { erreur: true });
       }
     });
     $('#f-son').addEventListener('change', async function () {
@@ -751,14 +752,14 @@
     if (o) {
       $('#f-suppr').addEventListener('click', async function () {
         const ok = await App.ui.confirmer({
-          titre: 'Supprimer cette observation ?',
-          texte: 'L’observation et ses photos seront effacées de cet appareil. Cette action est définitive.',
-          ok: 'Supprimer', danger: true
+          titre: tr('Supprimer cette observation ?'),
+          texte: tr('L’observation et ses photos seront effacées de cet appareil. Cette action est définitive.'),
+          ok: tr('Supprimer'), danger: true
         });
         if (!ok) return;
         await App.donnees.supprimerObservation(o.id);
         App.formulaireModifie = false;
-        App.ui.toast('Observation supprimée');
+        App.ui.toast(tr('Observation supprimée'));
         location.replace('#/observations');
       });
     }
@@ -772,7 +773,7 @@
       }
       btnEnreg.classList.add('occupe');
       btnEnreg.innerHTML = '<span class="rond-charge" aria-hidden="true"></span>' +
-        (etat.nouvelles.some(function (n) { return !n.res && !n.erreur; }) ? 'Traitement des photos…' : 'Enregistrement…');
+        (etat.nouvelles.some(function (n) { return !n.res && !n.erreur; }) ? tr('Traitement des photos…') : tr('Enregistrement…'));
       try {
         await finirEnregistrement();
         await file;
@@ -843,12 +844,12 @@
         App.demanderPersistance();
         if (nouvelleEspece) {
           const cible = App.cibles.contient(obs.especeId);
-          App.ui.toast('🎉 Nouvelle espèce pour ton carnet : ' + App.esp.nom(App.esp.get(obs.especeId)) + (cible ? ' · 🎯 cible atteinte !' : ''), {
-            action: 'Partager', surAction: function () { App.partage.ouvrir(obs.especeId); }, duree: 9000
+          App.ui.toast(tr('🎉 Nouvelle espèce pour ton carnet : {nom}', { nom: App.esp.nom(App.esp.get(obs.especeId)) }) + (cible ? ' · ' + tr('🎯 cible atteinte !') : ''), {
+            action: tr('Partager'), surAction: function () { App.partage.ouvrir(obs.especeId); }, duree: 9000
           });
         } else {
-          App.ui.toast(o ? 'Observation modifiée' : 'Observation enregistrée', {
-            action: o ? null : 'Nouvelle', surAction: function () { App.aller('#/ajouter'); }
+          App.ui.toast(o ? tr('Observation modifiée') : tr('Observation enregistrée'), {
+            action: o ? null : tr('Nouvelle'), surAction: function () { App.aller('#/ajouter'); }
           });
         }
         location.replace('#/espece/' + encodeURIComponent(obs.especeId));
@@ -856,10 +857,10 @@
         console.error(e);
         const plein = e && (e.name === 'QuotaExceededError' || /quota/i.test(e.message || ''));
         App.ui.toast(plein
-          ? 'Stockage plein : exporte une sauvegarde puis supprime des photos anciennes.'
-          : 'Enregistrement impossible : ' + (e && e.message ? e.message : e), { erreur: true });
+          ? tr('Stockage plein : exporte une sauvegarde puis supprime des photos anciennes.')
+          : tr('Enregistrement impossible : {erreur}', { erreur: e && e.message ? e.message : e }), { erreur: true });
         btnEnreg.classList.remove('occupe');
-        btnEnreg.innerHTML = u.ic('check') + 'Enregistrer';
+        btnEnreg.innerHTML = u.ic('check') + tr('Enregistrer');
       }
     }
     btnEnreg.addEventListener('click', enregistrer);
@@ -877,9 +878,9 @@
       const c = await App.donnees.charger();
       const o = c.obsParId.get(params[0]);
       if (!o) {
-        el.innerHTML = App.ui.entete({ titre: 'Observation introuvable', retour: '#/observations' }) +
-          '<div class="vide"><p>Cette observation n’existe plus (supprimée ou pas encore importée sur cet appareil).</p>' +
-          '<a class="btn btn-prim" href="#/observations">Mes observations</a></div>';
+        el.innerHTML = App.ui.entete({ titre: tr('Observation introuvable'), retour: '#/observations' }) +
+          '<div class="vide"><p>' + tr('Cette observation n’existe plus (supprimée ou pas encore importée sur cet appareil).') + '</p>' +
+          '<a class="btn btn-prim" href="#/observations">' + tr('Mes observations') + '</a></div>';
         return;
       }
       return formulaire(el, o, null);
