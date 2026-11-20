@@ -20,6 +20,30 @@ Android comme une vraie appli, et s'utilise aussi sur PC.
   référence reste visible sur la fiche pour comparer. Les crédits (auteur, licence) sont
   sur chaque fiche, dans Sauvegarde > À propos et dans `images/especes/CREDITS.md`.
 
+### Nouveautés de la version 1.5
+
+- **Carte hors ligne** : le bouton **Carte** (dans Mes spots et Mes obs., ou dans le menu
+  sur PC) ouvre une vraie carte de la région (Karlovo, Sredna Gora, Stara Planina) avec
+  tes spots, tes observations et ta position. Elle se télécharge **une seule fois**, de
+  préférence en Wi-Fi (25 Mo environ), puis elle **marche sans réseau**. Si la connexion
+  coupe, le téléchargement reprend où il s'était arrêté.
+- **Sur la carte** : touche un spot pour voir sa fiche, un point pour voir l'observation,
+  un rond chiffré pour zoomer sur un groupe. L'icône des calques (**Que montrer sur la
+  carte**) filtre par période et par espèce, et exporte tes spots en KML ou en GPX.
+  Un **appui long** sur la carte choisit un point : nouveau spot à cet endroit, ou étape
+  d'itinéraire.
+- **Placer un spot sans GPS** : sur la page du spot, **Placer sur la carte**. Sur la fiche
+  d'un spot, **Déplacer** corrige sa position.
+- **Itinéraires** : ajoute des spots ou des points comme étapes, range-les dans l'ordre que
+  tu veux, à pied ou en voiture, en partant ou non de ta position. L'itinéraire
+  s'enregistre tout seul et **Mes itinéraires** les garde (ils sont aussi dans Mes spots).
+- **Vers Google Maps** : **Ouvrir dans Google Maps** lance le trajet guidé (il faut du réseau
+  à ce moment-là). Au-delà de 9 étapes, l'itinéraire s'ouvre en plusieurs parties.
+  Sans réseau, le fichier **GPX** s'ouvre dans Organic Maps ou OsmAnd (cartes hors ligne
+  et guidage). Le fichier **KML** s'importe dans **Google My Maps** (sur PC : crée une
+  carte puis **Importer**) et s'affiche ensuite dans Google Maps sur le téléphone.
+- Les itinéraires partent dans les sauvegardes et se fusionnent comme le reste.
+
 ### Nouveautés de la version 1.4
 
 - **Mes spots** : sur la fiche de chaque oiseau, le bouton **Mes spots** (à côté de
@@ -85,7 +109,7 @@ Tu n'as besoin que d'un navigateur sur ton PC.
 3. Sur la page du dépôt, clique sur le lien **uploading an existing file**.
 4. Ouvre le dossier de l'appli sur ton PC et **glisse-dépose** dans la page :
    `index.html`, `sw.js`, `manifest.webmanifest`, `README.md`
-   et les dossiers `css`, `data`, `icons`, `js`.
+   et les dossiers `carte`, `css`, `data`, `icons`, `images`, `js`.
    N'envoie pas le dossier caché `.claude`, il ne sert qu'aux tests.
 5. En bas, clique sur **Commit changes**.
 6. Va dans **Settings** (onglet du dépôt) puis **Pages** (menu de gauche) :
@@ -216,8 +240,11 @@ Si Smokinya utilise un autre modèle de colonnes, la fonction `csv()` se trouve 
 - **GPS des photos** : Android cache parfois la position des photos choisies dans la
   galerie. Sur le terrain, le bouton **Ma position** est plus fiable, et il marche sans
   réseau.
-- **Liens « Voir la carte »** et **Itinéraire** : ils ont besoin de réseau (OpenStreetMap,
-  Google Maps). La distance et la direction vers un spot, elles, marchent sans réseau.
+- **Carte** : une fois téléchargée, la carte de l'appli, la distance et la direction vers un
+  spot marchent sans réseau. Les liens vers **Google Maps** (Itinéraire, Y aller avec
+  Google Maps), eux, ont besoin de réseau. La carte occupe environ 25 Mo : **Retirer la
+  carte du téléphone** (icône des calques sur la carte) libère cette place, tes spots et
+  tes observations ne sont pas touchés.
 - **Micro** : la première fois que tu touches « Enregistrer », autorise le micro. Les filtres
   « voix » du téléphone sont désactivés pour garder le chant fidèle.
 - **Soleil et lune** : calculés sans réseau pour ta dernière position GPS (sinon Karlovo),
@@ -232,6 +259,30 @@ Pour tester avec toutes les fonctions, lance un petit serveur dans le dossier de
 par exemple avec Python : `py -m http.server 8080`. Ouvre ensuite <http://localhost:8080>.
 En local, le mode hors connexion est désactivé pour ne pas gêner tes autres projets.
 Ajoute `?sw=1` à l'adresse pour le tester : <http://localhost:8080/?sw=1>.
+
+## 9. Mettre à jour la carte hors ligne (facultatif)
+
+La carte vient d'OpenStreetMap, à travers la carte mondiale que Protomaps publie chaque jour.
+Pour la rafraîchir (nouveaux chemins…) ou agrandir la zone, il faut **Node.js 18** ou plus
+sur le PC. Les outils sont dans le dossier `outils/` :
+
+1. Choisis une carte mondiale récente dans la liste
+   <https://build-metadata.protomaps.dev/builds.json>
+   (par exemple `https://build.protomaps.com/20261117.pmtiles`).
+2. Si besoin, change la zone dans `outils/zone-carte.json` : `zone` est la zone détaillée
+   (jusqu'au zoom 15), `niveaux` les zones des zooms plus larges.
+3. `node outils/extraire-carte.js <adresse> outils/zone-carte.json` donne la taille de
+   l'extrait. Ajoute `region.pmtiles` à la fin de la commande pour l'écrire : seuls les
+   morceaux utiles sont lus, pas la carte mondiale entière.
+4. `node outils/verifier-carte.js region.pmtiles <adresse>` vérifie l'extrait.
+5. `node outils/preparer-carte.js …` (les paramètres sont expliqués en haut du fichier)
+   remplit le dossier `carte/` et écrit `data/carte.js`.
+6. Augmente la version dans `sw.js`, puis publie. Sur le téléphone, la carte affiche
+   **Nouvelle carte disponible** : l'ancienne reste utilisable tant que la nouvelle n'est pas
+   téléchargée.
+
+Les licences de MapLibre, PMTiles, des styles Protomaps et de la police Noto Sans sont
+dans `carte/LICENCES.md`. Données de la carte : © les contributeurs OpenStreetMap (ODbL).
 
 ## Structure des fichiers
 
@@ -255,6 +306,11 @@ js/saison.js           page Saison, ligne du jour
 js/cibles.js           page Mes cibles
 js/sortie.js           mode sortie (comptage et bilan)
 js/spots.js            Mes spots, page d'un spot, perchoirs connus
+js/itineraires.js      itinéraires : liens Google Maps, fichiers GPX et KML
+js/carte.js            carte hors ligne : téléchargement, affichage, itinéraires
+data/carte.js          liste des fichiers de la carte (tailles, empreintes)
+carte/                 MapLibre, styles, polices, icônes et région (LICENCES.md)
+outils/                découpage et préparation de la carte (Node.js)
 js/catalogue.js        rubrique 1 : catalogue
 js/observations.js     rubrique 2 : formulaire et listes
 js/fiche.js            rubrique 3 : fiche espèce
@@ -265,4 +321,5 @@ icons/                 icônes de l'appli
 ```
 
 HTML, CSS et JavaScript « vanilla » : aucun framework, aucune étape de construction,
-aucune dépendance externe.
+rien n'est chargé depuis un autre site. La seule bibliothèque, MapLibre (pour la carte),
+est copiée dans `carte/`.

@@ -866,7 +866,7 @@ body[data-vue="sortie"] .toast { bottom: calc(96px + var(--safe-b)); }
   .nav .nav-ajout .rond { width: auto; height: auto; margin: 0; border: 0; background: none; box-shadow: none; color: inherit; }
   .nav .nav-ajout .ic { width: 22px; height: 22px; }
   .nav .nav-ajout .lbl { display: inline; }
-  .nav .nav-pied { display: flex; order: 9; margin-top: auto; gap: 8px; padding: 0 4px; }
+  .nav .nav-pied { display: flex; order: 10; margin-top: auto; gap: 8px; padding: 0 4px; }
   body[data-vue="ajouter"] .nav, body[data-vue="modifier"] .nav { display: flex; }
   .entete { padding-top: 28px; }
   .entete h1 { font-size: 32px; }
@@ -889,11 +889,12 @@ body[data-vue="sortie"] .toast { bottom: calc(96px + var(--safe-b)); }
   .nav a.nav-pc { display: flex; }
   .nav a[data-vue="catalogue"] { order: 2; }
   .nav a[data-vue="observations"] { order: 3; }
-  .nav a[data-vue="sortie"] { order: 4; }
-  .nav a[data-vue="saison"] { order: 5; }
-  .nav a[data-vue="cibles"] { order: 6; }
-  .nav a[data-vue="stats"] { order: 7; }
-  .nav a[data-vue="sauvegarde"] { order: 8; }
+  .nav a[data-vue="carte"] { order: 4; }
+  .nav a[data-vue="sortie"] { order: 5; }
+  .nav a[data-vue="saison"] { order: 6; }
+  .nav a[data-vue="cibles"] { order: 7; }
+  .nav a[data-vue="stats"] { order: 8; }
+  .nav a[data-vue="sauvegarde"] { order: 9; }
   body[data-vue="sortie"] .nav { display: flex; }
   body[data-vue="sortie"] .toast { bottom: 100px; }
   .pastille-sortie { bottom: 24px; left: calc(50% + var(--menu-l) / 2); }
@@ -969,3 +970,180 @@ body[data-vue="sortie"] .toast { bottom: calc(96px + var(--safe-b)); }
 .dlg-spot .dlg-actions { flex-wrap: nowrap; }
 .dlg-spot .dlg-actions .btn-second { flex: 0 0 auto; padding: 0 16px; }
 .dlg-spot .dlg-actions .btn-prim { flex: 1 1 0; min-width: 0; padding: 0 12px; }
+
+/* ---------- Carte hors ligne (v1.5.0) ---------- */
+.vide-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; }
+.btn-carte-obs { flex: 0 0 auto; min-height: 50px; padding: 0 16px; }
+.section > h2 .compte { font: 600 14px var(--police); color: var(--encre-3); }
+/* Écran de téléchargement */
+.carte-accueil { max-width: 640px; padding-top: 4px; }
+.carte-dl-haut { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+.carte-dl-ic { width: 40px; height: 40px; stroke-width: 1.6; color: var(--vert-texte); }
+.carte-dl h2 { font-size: 20px; }
+.carte-dl > p { color: var(--encre-2); }
+.carte-dl-infos { list-style: none; margin: 12px 0 16px; padding: 0; display: grid; gap: 8px; }
+.carte-dl-infos li { display: flex; align-items: flex-start; gap: 10px; font-size: 15px; color: var(--encre-2); }
+.carte-dl-infos .ic { width: 19px; height: 19px; margin-top: 2px; color: var(--encre-3); }
+.carte-dl .aide { margin: 10px 0 0; font-size: 13.5px; color: var(--encre-3); }
+.carte-dl-erreur { display: block; margin: 0 0 10px; }
+.carte-dl-ligne { display: flex; align-items: center; justify-content: space-between; gap: 10px; color: var(--encre-2); font-variant-numeric: tabular-nums; }
+.carte-dl-ligne .lien-btn { flex: 0 0 auto; }
+
+/* La carte occupe tout l'écran au-dessus des onglets */
+#vue.vue-carte { max-width: none; min-height: 0; padding: 0; }
+body:has(#vue.vue-carte) { overscroll-behavior: none; }
+.carte-page { display: flex; flex-direction: column; height: calc(100vh - var(--nav-h) - var(--safe-b)); height: calc(100dvh - var(--nav-h) - var(--safe-b)); }
+.carte-page .entete { flex: 0 0 auto; height: 60px; padding: 0 10px 0 12px; gap: 8px; background: var(--bg); border-bottom: 1px solid var(--ligne); }
+.carte-page .entete h1 { font-size: 22px; }
+.carte-page .entete .sous { margin: 1px 0 0; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.carte-page .entete .btn-icone { width: 44px; height: 44px; }
+.carte-sortie { position: relative; background: var(--sortie-bg); border-color: var(--sortie-bg); color: var(--sortie-txt); }
+.carte-sortie:hover { border-color: var(--sortie-bg); }
+.carte-sortie .point { position: absolute; top: 5px; right: 5px; width: 9px; height: 9px; border-radius: 50%; border: 2px solid var(--bg); background: var(--sortie-txt); animation: clignote 1.4s ease-in-out infinite; }
+.carte-cadre { position: relative; flex: 1 1 auto; min-height: 0; overflow: hidden; }
+.carte-zone { position: absolute; inset: 0; background: var(--bg-2); -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+.carte-zone .maplibregl-canvas { outline: none; }
+.carte-charge { position: absolute; inset: 0; z-index: 6; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; padding: 24px; background: var(--bg); color: var(--encre-3); font-weight: 600; text-align: center; }
+.carte-charge .rond-charge { width: 28px; height: 28px; color: var(--vert-texte); }
+
+/* Bandeaux du haut, boutons à droite, fiches en bas */
+.carte-haut { position: absolute; z-index: 4; top: 10px; left: 10px; right: 66px; display: flex; flex-direction: column; align-items: flex-start; gap: 8px; pointer-events: none; }
+.carte-haut > * { pointer-events: auto; max-width: 100%; }
+.carte-outils { position: absolute; z-index: 4; top: 10px; right: 10px; display: flex; flex-direction: column; gap: 8px; }
+.carte-outils .btn-icone { box-shadow: var(--ombre); }
+.carte-outils .btn-icone.cherche .ic { animation: clignote 1.2s ease-in-out infinite; }
+.carte-zoom { display: none; }
+@media (hover: hover) and (pointer: fine) { .carte-zoom { display: inline-grid; } }
+.carte-bas { position: absolute; z-index: 5; left: 10px; right: 10px; bottom: 10px; max-height: calc(100% - 20px); display: flex; flex-direction: column; justify-content: flex-end; gap: 8px; pointer-events: none; }
+.carte-bas > * { pointer-events: auto; flex: 0 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; }
+.carte-fiche, .carte-itin { background: var(--carte); border: 1px solid var(--ligne); border-radius: 16px; box-shadow: var(--ombre); padding: 12px 14px; }
+.carte-fiche { max-height: 44vh; max-height: 44dvh; }
+.carte-itin { max-height: 58vh; max-height: 58dvh; }
+
+.carte-mode { background: var(--vert); color: var(--sur-vert); border-radius: 14px; padding: 10px 12px; box-shadow: var(--ombre); width: 100%; }
+.carte-mode p { display: flex; align-items: flex-start; gap: 8px; margin: 0 0 8px; font-size: 14.5px; font-weight: 600; }
+.carte-mode p .ic { width: 19px; height: 19px; margin-top: 1px; }
+.carte-mode-actions { display: flex; gap: 8px; }
+.carte-mode-actions .btn { flex: 1 1 0; }
+.carte-mode .btn-second { background: transparent; color: var(--sur-vert); border-color: color-mix(in srgb, var(--sur-vert) 55%, transparent); }
+.carte-mode .btn-prim { background: var(--sur-vert); color: var(--vert); }
+.carte-avis { display: flex; align-items: center; flex-wrap: wrap; gap: 2px 10px; padding: 6px 12px; border-radius: 12px; background: var(--att-bg); color: var(--att); font-size: 14px; font-weight: 600; box-shadow: var(--ombre); }
+.carte-avis .lien-btn { color: inherit; padding: 4px 0; }
+.carte-maj { padding: 10px 12px; border-radius: 14px; background: var(--carte); border: 1px solid var(--ligne); box-shadow: var(--ombre); font-size: 14px; width: 100%; }
+.carte-maj p { display: flex; align-items: center; gap: 8px; margin: 0 0 8px; font-weight: 600; }
+.carte-maj p .ic { width: 18px; height: 18px; color: var(--vert-texte); }
+.carte-maj .carte-dl-erreur { font-size: 13.5px; }
+
+/* Marqueurs : spots, ma position, point choisi, épingle à placer, étapes */
+.carte-spot { display: flex; align-items: center; gap: 5px; padding: 0; border: 0; background: none; color: var(--encre); cursor: pointer; }
+.carte-spot .cs-rond { display: grid; place-items: center; width: 32px; height: 32px; flex: 0 0 auto; border-radius: 50%; background: var(--vert); color: var(--sur-vert); border: 2.5px solid var(--carte); box-shadow: 0 1px 4px rgba(0, 0, 0, .35); transition: transform .12s; }
+.carte-spot .cs-rond .ic { width: 17px; height: 17px; stroke-width: 2.2; }
+.carte-spot .cs-nom { max-width: 150px; padding: 1px 7px; border-radius: 8px; background: color-mix(in srgb, var(--carte) 88%, transparent); font-size: 12.5px; font-weight: 700; line-height: 1.45; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; box-shadow: 0 1px 3px rgba(0, 0, 0, .18); }
+.zoom-loin .carte-spot .cs-nom { display: none; }
+.carte-spot.pale { opacity: .45; }
+.carte-spot.choisi { z-index: 3; opacity: 1; }
+.carte-spot.choisi .cs-rond { transform: scale(1.18); box-shadow: 0 0 0 4px color-mix(in srgb, var(--vert) 40%, transparent), 0 2px 6px rgba(0, 0, 0, .35); }
+.carte-moi { width: 20px; height: 20px; border-radius: 50%; background: #2F7DE1; border: 3px solid #FFFFFF; box-shadow: 0 0 0 1px rgba(0, 0, 0, .15), 0 1px 5px rgba(0, 0, 0, .4); pointer-events: none; }
+.carte-moi::after { content: ""; position: absolute; inset: -9px; border-radius: 50%; border: 2px solid #2F7DE1; opacity: 0; animation: onde 2.4s ease-out infinite; }
+@keyframes onde { 0% { transform: scale(.5); opacity: .7; } 100% { transform: scale(1.5); opacity: 0; } }
+.carte-point .ic, .carte-placer .ic { display: block; width: 38px; height: 38px; fill: var(--dang); stroke: var(--carte); stroke-width: 1.6; filter: drop-shadow(0 2px 3px rgba(0, 0, 0, .35)); }
+.carte-placer { cursor: grab; }
+.carte-placer .ic { width: 46px; height: 46px; fill: var(--vert); animation: rebond 1.4s ease-in-out infinite; }
+@keyframes rebond { 50% { transform: translateY(-5px); } }
+.carte-etape { display: grid; place-items: center; min-width: 24px; height: 24px; padding: 0 4px; border-radius: 12px; background: var(--encre); color: var(--bg); border: 2px solid var(--carte); font-size: 12.5px; font-weight: 800; line-height: 1; box-shadow: 0 1px 4px rgba(0, 0, 0, .3); pointer-events: none; }
+.carte-etape.sur-spot { min-width: 21px; height: 21px; font-size: 11.5px; z-index: 2; }
+
+/* Fiche d'un spot, d'une observation ou d'un point */
+.cf-haut { display: flex; align-items: center; gap: 12px; }
+.cf-vignette { flex: 0 0 52px; width: 52px; height: 52px; border-radius: 12px; }
+.cf-vignette .ic { width: 24px; height: 24px; }
+.cf-txt { flex: 1 1 auto; min-width: 0; }
+.cf-txt b { display: block; font-size: 16.5px; line-height: 1.25; }
+.cf-txt small { display: block; margin-top: 2px; color: var(--encre-3); font-size: 13.5px; line-height: 1.35; }
+.cf-fermer { align-self: flex-start; width: 40px; height: 40px; margin: -6px -8px 0 0; border-color: transparent; background: none; color: var(--encre-3); }
+.cf-trajet { display: flex; align-items: center; gap: 6px; margin: 8px 0 0; font-size: 14.5px; font-weight: 700; color: var(--vert-texte); }
+.cf-trajet .ic { width: 17px; height: 17px; }
+.cf-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+.cf-actions .btn { flex: 1 1 auto; }
+.cf-actions .btn .ic { width: 19px; height: 19px; }
+.cf-liens { display: flex; flex-wrap: wrap; gap: 0 18px; margin-top: 4px; }
+.cf-liens .lien-btn { display: inline-flex; align-items: center; gap: 6px; font-size: 14.5px; text-decoration: none; }
+.cf-liens .ic { width: 17px; height: 17px; }
+.cf-liste { list-style: none; margin: 8px 0 0; padding: 0; }
+.cf-liste a { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; padding: 9px 2px; border-top: 1px solid var(--ligne); color: inherit; text-decoration: none; }
+.cf-liste b { min-width: 0; font-weight: 600; }
+.cf-liste small { flex: 0 0 auto; color: var(--encre-3); font-size: 13.5px; white-space: nowrap; }
+
+/* Panneau « Itinéraire » */
+.ci-haut { display: flex; align-items: center; gap: 4px; }
+.ci-titre { flex: 1 1 auto; min-width: 0; display: flex; align-items: center; gap: 10px; padding: 2px 0; border: 0; background: none; color: inherit; text-align: left; }
+.ci-titre > .ic:first-child { color: var(--vert-texte); }
+.ci-txt { flex: 1 1 auto; min-width: 0; }
+.ci-txt b { display: block; line-height: 1.3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ci-txt small { display: block; color: var(--encre-3); font-size: 13.5px; line-height: 1.35; }
+/* Panneau ouvert : flèche vers le bas (replier) ; replié : vers le haut (déplier) */
+.ci-chev { color: var(--encre-3); transition: transform .15s; }
+.ci-chev.replie { transform: rotate(180deg); }
+.ci-options { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; margin: 10px 0 6px; }
+.seg-petit { padding: 3px; gap: 3px; }
+.seg-petit button { min-height: 38px; padding: 0 12px; font-size: 14px; }
+.ci-depart { display: inline-flex; align-items: center; gap: 8px; min-height: 38px; font-size: 14.5px; font-weight: 600; color: var(--encre-2); cursor: pointer; }
+.ci-depart input { width: 20px; height: 20px; margin: 0; accent-color: var(--vert); }
+.ci-etapes { list-style: none; margin: 6px 0 8px; padding: 0; }
+.ci-etapes li { display: flex; align-items: center; gap: 2px; border-top: 1px solid var(--ligne); }
+.ci-etape { flex: 1 1 auto; min-width: 0; display: flex; align-items: center; gap: 10px; padding: 7px 0; border: 0; background: none; color: inherit; text-align: left; }
+.ci-etape .ci-txt b { font-weight: 600; font-size: 15px; }
+.ci-n { display: grid; place-items: center; flex: 0 0 26px; width: 26px; height: 26px; border-radius: 50%; background: var(--encre); color: var(--bg); font-size: 13px; font-weight: 800; }
+.ci-mini { display: grid; place-items: center; flex: 0 0 38px; width: 38px; height: 38px; padding: 0; border: 0; border-radius: 50%; background: none; color: var(--encre-3); }
+.ci-mini:hover:not(:disabled) { background: var(--carte-2); }
+.ci-mini:disabled { opacity: .3; cursor: default; }
+.ci-mini .ic { width: 19px; height: 19px; }
+.ci-vide { margin: 8px 0; }
+.ci-actions { display: flex; flex-wrap: wrap; gap: 8px; margin: 8px 0; }
+.ci-actions .btn { flex: 1 1 auto; }
+.ci-actions .ci-google { flex-basis: 100%; }
+.ci-actions .btn .ic { width: 19px; height: 19px; }
+.carte-itin .aide { margin: 6px 0; font-size: 13px; line-height: 1.45; color: var(--encre-3); }
+.ci-parties { display: flex; flex-wrap: wrap; gap: 6px; margin: 4px 0 8px; }
+.ci-parties .btn { flex: 1 1 auto; font-variant-numeric: tabular-nums; }
+.ci-bas { display: flex; flex-wrap: wrap; gap: 0 18px; margin-top: 6px; padding-top: 2px; border-top: 1px solid var(--ligne); }
+.ci-bas .lien-btn { display: inline-flex; align-items: center; gap: 6px; font-size: 14.5px; text-decoration: none; }
+.ci-bas .ic { width: 17px; height: 17px; }
+
+/* Fenêtres « Que montrer sur la carte » et « Mes itinéraires » */
+.dlg-carte-p { padding: 0 10px; }
+.dlg-carte .champ { margin: 12px 0 4px; }
+.dlg-carte .aide { margin: 4px 0 8px; font-size: 13.5px; color: var(--encre-3); }
+.dlg-carte-h { margin: 20px 10px 2px; font-size: 17px; }
+.dlg-carte .actions-fiche { margin: 4px 0 0; }
+.cf-espece { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 12px; }
+.cf-espece .btn { max-width: 100%; }
+.lien-danger { color: var(--dang); }
+.dlg-iti { list-style: none; padding: 0; }
+.dlg-iti-ligne { display: flex; align-items: center; gap: 4px; }
+.dlg-iti-ouvrir { flex: 1 1 auto; min-width: 0; display: flex; align-items: center; gap: 12px; min-height: 58px; padding: 6px 10px; border: 0; border-radius: 12px; background: none; color: inherit; text-align: left; }
+.dlg-iti-ouvrir:hover { background: var(--carte-2); }
+.dlg-iti-ouvrir > .ic { color: var(--vert-texte); }
+.dlg-iti .ls-txt { flex: 1 1 auto; min-width: 0; }
+.dlg-iti .ls-txt b { display: block; }
+.dlg-iti .ls-txt small { color: var(--encre-3); font-size: 13.5px; }
+.dlg-iti .btn-icone { border-color: transparent; background: none; color: var(--encre-3); }
+.dlg-iti .btn-icone.confirmer { width: auto; padding: 0 12px; border-radius: 12px; background: var(--dang-bg); color: var(--dang); font-size: 14px; }
+
+/* Commandes de MapLibre aux couleurs de l'appli */
+.carte-zone .maplibregl-map { font: inherit; }
+.carte-zone .maplibregl-ctrl-scale { border-color: var(--encre-2); background: color-mix(in srgb, var(--carte) 80%, transparent); color: var(--encre); font-size: 11px; }
+.carte-zone .maplibregl-ctrl-attrib { background: color-mix(in srgb, var(--carte) 85%, transparent); color: var(--encre-2); font-size: 11px; }
+.carte-zone .maplibregl-ctrl-attrib a { color: inherit; }
+.carte-zone .maplibregl-ctrl-attrib.maplibregl-compact { background-color: #FFFFFF; }
+
+/* PC : fiches à gauche, plus larges */
+@media (min-width: 900px) {
+  .carte-page { height: 100vh; height: 100dvh; }
+  .carte-page .entete { height: 72px; padding: 0 20px 0 24px; }
+  .carte-page .entete h1 { font-size: 26px; }
+  .carte-page .entete .sous { font-size: 14px; }
+  .carte-bas { left: 14px; right: auto; bottom: 34px; width: 410px; max-height: calc(100% - 48px); }
+  .carte-haut { top: 14px; left: 14px; right: 74px; }
+  .carte-outils { top: 14px; right: 14px; }
+}

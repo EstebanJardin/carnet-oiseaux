@@ -1,0 +1,3 @@
+# Fichiers de la carte hors ligne : publiés tels quels, octet pour octet
+# (l'appli vérifie l'empreinte SHA-256 de chacun au téléchargement, voir data/carte.js)
+carte/** -text

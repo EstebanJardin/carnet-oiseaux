@@ -50,7 +50,7 @@
       // Spot (lien vers sa page) ; le lieu n'est répété que s'il diffère du nom du spot
       const spot = o.spotId && c.spotsParId ? c.spotsParId.get(o.spotId) : null;
       const lieuPropre = !!o.lieu && (!spot || o.lieu !== spot.nom);
-      const lienGps = aUnePosition(o) ? ' <a href="' + lienCarte(o.lat, o.lon) + '" target="_blank" rel="noopener" title="' + u.esc(tr('Voir sur la carte (connexion nécessaire)')) + '" aria-label="' + u.esc(tr('Voir sur la carte')) + '">' + u.ic('carte') + '</a>' : '';
+      const lienGps = aUnePosition(o) && o.id ? ' <a href="#/carte/obs/' + encodeURIComponent(o.id) + '" title="' + u.esc(tr('Voir sur la carte')) + '" aria-label="' + u.esc(tr('Voir sur la carte')) + '">' + u.ic('carte') + '</a>' : '';
       if (spot) {
         meta.push('<span>' + u.ic(App.spots.icone(spot)) + '<a class="lien-spot" href="#/spot/' + encodeURIComponent(spot.id) + '" title="' + u.esc(tr('Voir le spot')) + '">' + u.esc(spot.nom) + '</a>' + (lieuPropre ? '' : lienGps) + '</span>');
       }
@@ -210,6 +210,7 @@
         '<label class="recherche" style="flex:1 1 220px;height:50px">' + u.ic('recherche') +
         '<span class="sr-only">' + tr('Filtrer par espèce') + '</span>' +
         '<input type="search" id="obs-q" placeholder="' + u.esc(tr('Filtrer par espèce…')) + '" autocomplete="off" value="' + u.esc(filtreObs) + '"></label>' +
+        '<a class="btn btn-second btn-carte-obs" href="#/carte">' + u.ic('carte') + tr('Carte') + '</a>' +
         '</div>' +
         '<div id="obs-contenu"></div>';
 

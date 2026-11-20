@@ -15,12 +15,14 @@
      spots         { id, nom, type, lat, lon, precision, heures, notes,
                      photoId, creeLe, modifieLe }  ← affûts, points d'observation
      notesEspeces  { id (= id de l'espèce), perchoirs, modifieLe }
+     itineraires   { id, nom, mode, depuisPosition, etapes[], creeLe,
+                     modifieLe }  ← itinéraires préparés sur la carte
    ===================================================================== */
 'use strict';
 
 (function (App) {
   const NOM_BASE = 'carnet-oiseaux';
-  const VERSION_BASE = 3; // 2 : sons (chants enregistrés) · 3 : spots et perchoirs
+  const VERSION_BASE = 4; // 2 : sons (chants enregistrés) · 3 : spots et perchoirs · 4 : itinéraires
   let ouverture = null;
 
   function ouvrir() {
@@ -53,6 +55,9 @@
         }
         if (!base.objectStoreNames.contains('notesEspeces')) {
           base.createObjectStore('notesEspeces', { keyPath: 'id' });
+        }
+        if (!base.objectStoreNames.contains('itineraires')) {
+          base.createObjectStore('itineraires', { keyPath: 'id' });
         }
       };
       req.onsuccess = function () {
@@ -122,17 +127,19 @@
     charger: async function () {
       if (cache) return cache;
       const res = await Promise.all([App.db.tout('observations'), App.db.tout('photos'), App.db.tout('sons'),
-        App.db.tout('spots'), App.db.tout('notesEspeces')]);
-      const obs = res[0], photos = res[1], sons = res[2], spots = res[3], notes = res[4];
+        App.db.tout('spots'), App.db.tout('notesEspeces'), App.db.tout('itineraires')]);
+      const obs = res[0], photos = res[1], sons = res[2], spots = res[3], notes = res[4], itineraires = res[5];
       obs.sort(function (a, b) { return cleObs(b).localeCompare(cleObs(a)); }); // plus récentes d'abord
       const photosParId = new Map(photos.map(function (p) { return [p.id, p]; }));
       const sonsParId = new Map(sons.map(function (s) { return [s.id, s]; }));
       const obsParId = new Map(obs.map(function (o) { return [o.id, o]; }));
       const spotsParId = new Map(spots.map(function (s) { return [s.id, s]; }));
       const notesEspeces = new Map(notes.map(function (n) { return [n.id, n]; }));
+      itineraires.sort(function (a, b) { return (b.modifieLe || '').localeCompare(a.modifieLe || ''); }); // plus récents d'abord
       cache = {
         obs: obs, photos: photos, photosParId: photosParId, sons: sons, sonsParId: sonsParId, obsParId: obsParId,
-        spots: spots, spotsParId: spotsParId, notesEspeces: notesEspeces, resume: null
+        spots: spots, spotsParId: spotsParId, notesEspeces: notesEspeces,
+        itineraires: itineraires, itinerairesParId: new Map(itineraires.map(function (i) { return [i.id, i]; })), resume: null
       };
       return cache;
     },

@@ -1,0 +1,14 @@
+{
+  "nom": "Karlovo – Sredna Gora – Stara Planina",
+  "description": "Karlovo – Sredna Gora – Stara Planina (Bulgarie), extrait pour le Carnet d'oiseaux",
+  "zone": [24.40, 42.38, 25.25, 42.90],
+  "niveaux": [
+    {"z": [0, 8], "bbox": [22.3, 41.2, 28.7, 44.3]},
+    {"z": [9, 9], "bbox": [23.6, 41.9, 26.0, 43.4]},
+    {"z": [10, 10], "bbox": [24.10, 42.15, 25.55, 43.10]},
+    {"z": [11, 11], "bbox": [24.25, 42.28, 25.40, 43.00]},
+    {"z": [12, 15], "bbox": [24.40, 42.38, 25.25, 42.90]}
+  ],
+  "bornes": [22.3, 41.2, 28.7, 44.3],
+  "centre": [24.8058, 42.6417, 12]
+}

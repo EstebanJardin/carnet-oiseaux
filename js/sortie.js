@@ -31,8 +31,8 @@
     const p = document.getElementById('pastille-sortie');
     if (!p) return;
     const s = lire();
-    // Sur « Mes observations », le bouton du haut affiche déjà « Reprendre »
-    if (!s || nomVue === 'sortie' || nomVue === 'ajouter' || nomVue === 'modifier' || nomVue === 'observations') { p.hidden = true; return; }
+    // Sur « Mes observations », le bouton du haut affiche déjà « Reprendre » ; sur la carte, un bouton de l'en-tête
+    if (!s || nomVue === 'sortie' || nomVue === 'ajouter' || nomVue === 'modifier' || nomVue === 'observations' || nomVue === 'carte') { p.hidden = true; return; }
     const t = totaux(s);
     p.innerHTML = '<span class="point" aria-hidden="true"></span>' + tr('Sortie en cours') + ' · ' + u.pluriel(t.esp, 'espèce') + ' · ' + duree(s.debut);
     p.hidden = false;

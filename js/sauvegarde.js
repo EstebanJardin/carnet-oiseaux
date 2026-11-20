@@ -2,7 +2,7 @@
    sauvegarde.js — export / import, CSV, stockage, réglages d'affichage
    Format .zip :
      carnet-oiseaux.json   toutes les données (observations, infos photos,
-                           spots, perchoirs, cibles)
+                           spots, perchoirs, cibles, itinéraires)
      observations.csv      le tableau des observations (partie 1)
      photos/…              les originaux, avec un nom clair
      apercus/…             les copies allégées (évite de tout recalculer)
@@ -93,10 +93,11 @@
     const instant = new Date().toISOString();
     const depuis = type === 'nouveautes' ? App.prefs.get('derniereSauvegardeISO', null) : null;
     let obs = c.obs, photos = c.photos, sons = c.sons, suppr = suppressions;
-    let spots = c.spots, notes = Array.from(c.notesEspeces.values());
+    let spots = c.spots, notes = Array.from(c.notesEspeces.values()), itineraires = c.itineraires;
     if (depuis) {
       obs = obs.filter(function (o) { return (o.modifieLe || '') > depuis; });
       spots = spots.filter(function (s) { return (s.modifieLe || '') > depuis; });
+      itineraires = itineraires.filter(function (it) { return (it.modifieLe || '') > depuis; });
       notes = notes.filter(function (n) { return (n.modifieLe || '') > depuis; });
       photos = photos.filter(function (p) { return (p.modifieLe || p.creeLe || '') > depuis; });
       sons = sons.filter(function (s) { return (s.modifieLe || s.creeLe || '') > depuis; });
@@ -132,7 +133,7 @@
     const total = tous.reduce(function (s, it) { return s + it.taille; }, 0);
     return {
       c: c, type: depuis ? 'nouveautes' : 'complet', depuis: depuis, instant: instant, obs: obs, suppr: suppr,
-      spots: spots, notes: notes,
+      spots: spots, notes: notes, itineraires: itineraires,
       parties: parties, taille: total, nbPhotos: items.length, nbSons: itemsSons.length
     };
   }
@@ -159,6 +160,7 @@
       cibles: App.cibles.liste(),
       spots: prep.spots,
       notesEspeces: prep.notes,
+      itineraires: prep.itineraires,
       suppressions: prep.suppr
     };
     const entrees = [{ nom: 'carnet-oiseaux.json', donnees: JSON.stringify(donnees) }];
@@ -194,6 +196,7 @@
     const locSons = new Map((await App.db.tout('sons')).map(function (s) { return [s.id, s]; }));
     const locSpots = new Map((await App.db.tout('spots')).map(function (s) { return [s.id, s]; }));
     const locNotes = new Map((await App.db.tout('notesEspeces')).map(function (n) { return [n.id, n]; }));
+    const locIti = new Map((await App.db.tout('itineraires')).map(function (it) { return [it.id, it]; }));
     const ops = [];
 
     (d.suppressions || []).forEach(function (s) {
@@ -211,6 +214,9 @@
       } else if (s.type === 'spot') {
         const x = locSpots.get(s.id);
         if (x && (x.modifieLe || '') <= s.le) { ops.push({ magasin: 'spots', effacer: s.id }); locSpots.delete(s.id); }
+      } else if (s.type === 'itineraire') {
+        const x = locIti.get(s.id);
+        if (x && (x.modifieLe || '') <= s.le) { ops.push({ magasin: 'itineraires', effacer: s.id }); locIti.delete(s.id); }
       }
     });
 
@@ -228,6 +234,17 @@
     (d.notesEspeces || []).forEach(function (n) {
       const loc = locNotes.get(n.id);
       if (!loc || (n.modifieLe || '') > (loc.modifieLe || '')) ops.push({ magasin: 'notesEspeces', mettre: n });
+    });
+    // Itinéraires préparés sur la carte : la version la plus récente gagne
+    (d.itineraires || []).forEach(function (it) {
+      if (!it || !it.id || !Array.isArray(it.etapes)) return;
+      const sup = locSup.get(it.id);
+      if (sup && (sup.le || '') >= (it.modifieLe || '')) return;
+      const loc = locIti.get(it.id);
+      if (!loc || (it.modifieLe || '') > (loc.modifieLe || '')) {
+        ops.push({ magasin: 'itineraires', mettre: it });
+        bilan.itineraires = (bilan.itineraires || 0) + 1;
+      }
     });
 
     (d.observations || []).forEach(function (o) {
@@ -333,6 +350,7 @@
       if (derniereISO) {
         nouv.obs = c.obs.filter(function (o) { return (o.modifieLe || '') > derniereISO; }).length;
         nouv.spots = c.spots.filter(function (s) { return (s.modifieLe || '') > derniereISO; }).length;
+        nouv.itineraires = c.itineraires.filter(function (it) { return (it.modifieLe || '') > derniereISO; }).length;
         c.photos.forEach(function (p) { if ((p.modifieLe || p.creeLe || '') > derniereISO) { nouv.photos++; nouv.taille += tailleBlobs(p); } });
       }
       const theme = App.theme.choix();
@@ -355,7 +373,7 @@
         (c.sons.length ? ', ' + u.pluriel(c.sons.length, 'son') : '') + ' · ≈ ' + u.taille(tailleTotale) + '</span></div></button>' +
         (derniereISO
           ? '<button type="button" class="action-sauv" data-exp="nouveautes">' + u.ic('actualiser') +
-            '<div><strong>' + tr('Nouveautés seulement (.zip)') + '</strong><span>' + tr('{a} : {b}', { a: tr('Depuis le {date}', { date: u.dateCourte(derniereISO.slice(0, 10)) }), b: u.pluriel(nouv.obs, 'observation') + ', ' + u.pluriel(nouv.photos, 'photo') + (nouv.spots ? ', ' + u.pluriel(nouv.spots, 'spot') : '') }) + ' · ≈ ' + u.taille(nouv.taille) + '</span></div></button>'
+            '<div><strong>' + tr('Nouveautés seulement (.zip)') + '</strong><span>' + tr('{a} : {b}', { a: tr('Depuis le {date}', { date: u.dateCourte(derniereISO.slice(0, 10)) }), b: u.pluriel(nouv.obs, 'observation') + ', ' + u.pluriel(nouv.photos, 'photo') + (nouv.spots ? ', ' + u.pluriel(nouv.spots, 'spot') : '') + (nouv.itineraires ? ', ' + u.pluriel(nouv.itineraires, 'itinéraire') : '') }) + ' · ≈ ' + u.taille(nouv.taille) + '</span></div></button>'
           : '') +
         '<button type="button" class="action-sauv" data-exp="json">' + u.ic('fichier') +
         '<div><strong>' + tr('Données seules (.json)') + '</strong><span>' + tr('Observations sans les photos, très léger') + '</span></div></button>' +
@@ -464,7 +482,7 @@
               await exporterZip(type);
             } else if (type === 'json') {
               const suppressions = await App.db.tout('suppressions');
-              const d = { format: FORMAT, version: VERSION_FORMAT, appli: App.VERSION, exporteLe: new Date().toISOString(), type: 'donnees', observations: c.obs, photos: [], sons: [], cibles: App.cibles.liste(), spots: c.spots, notesEspeces: Array.from(c.notesEspeces.values()), suppressions: suppressions };
+              const d = { format: FORMAT, version: VERSION_FORMAT, appli: App.VERSION, exporteLe: new Date().toISOString(), type: 'donnees', observations: c.obs, photos: [], sons: [], cibles: App.cibles.liste(), spots: c.spots, notesEspeces: Array.from(c.notesEspeces.values()), itineraires: c.itineraires, suppressions: suppressions };
               const nom = 'carnet-oiseaux_donnees_' + u.dateISO() + '.json';
               const blob = new Blob([JSON.stringify(d, null, 1)], { type: 'application/json' });
               App.telechargerBlob(blob, nom);
@@ -516,6 +534,7 @@
           u.pluriel(bilan.photosAjoutees, 'photo ajoutée', 'photos ajoutées') +
           (bilan.sonsAjoutes ? ', ' + u.pluriel(bilan.sonsAjoutes, 'son ajouté', 'sons ajoutés') : '') +
           (bilan.spots ? ', ' + u.pluriel(bilan.spots, 'spot ajouté ou mis à jour', 'spots ajoutés ou mis à jour') : '') +
+          (bilan.itineraires ? ', ' + u.pluriel(bilan.itineraires, 'itinéraire ajouté ou mis à jour', 'itinéraires ajoutés ou mis à jour') : '') +
           (bilan.ignorees ? ' · ' + tr('{n} déjà à jour', { n: bilan.ignorees }) : '') +
           (bilan.supprimees ? ' · ' + u.pluriel(bilan.supprimees, 'supprimée', 'supprimées') : '') }) + '</span></div></div>' +
           (bilan.erreurs.length ? '<ul class="erreur-champ">' + bilan.erreurs.map(function (x) { return '<li>' + u.esc(x) + '</li>'; }).join('') + '</ul>' : '') +

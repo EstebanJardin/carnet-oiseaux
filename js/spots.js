@@ -7,7 +7,8 @@
      « Perchoirs connus » et les spots où l'espèce a été vue
    Une observation peut être rattachée à un spot (champ spotId), sans
    obligation. Distance et direction sont calculées sur le téléphone,
-   sans connexion ; seules la carte et l'itinéraire demandent du réseau.
+   sans connexion. Les spots s'affichent sur la carte hors ligne
+   (carte.js) ; seul l'itinéraire Google Maps demande du réseau.
    ===================================================================== */
 'use strict';
 
@@ -50,6 +51,8 @@
   }
   // Position récente (moins de 10 min), sinon null
   function positionRecente() { return maPosition && Date.now() - maPosition.le < 600000 ? maPosition : null; }
+  // Position trouvée ailleurs (suivi GPS de la carte) : { lat, lon, precision, le }
+  function noterPosition(p) { if (p && isFinite(p.lat) && isFinite(p.lon)) maPosition = p; }
 
   const RAD = Math.PI / 180;
   function distance(a, b) { // en mètres
@@ -157,7 +160,13 @@
       delete n.spotId;
       ops.push({ magasin: 'observations', mettre: n });
     });
+    // Les itinéraires gardent l'étape, comme un simple point sur la carte
+    (c.itineraires || []).forEach(function (it) {
+      const n = App.itineraires.sansSpot(it, spot);
+      if (n) ops.push({ magasin: 'itineraires', mettre: Object.assign(n, { modifieLe: maintenant }) });
+    });
     await App.db.ecrire(ops);
+    App.itineraires.oublierSpotDuBrouillon(spot);
   }
 
   /* ---------- Fenêtre : nouveau spot / modifier un spot ---------- */
@@ -383,6 +392,7 @@
 
       const barre = '<div class="outils-obs">' +
         '<button type="button" class="btn btn-prim" data-spots="nouveau">' + u.ic('plus') + tr('Nouveau spot') + '</button>' +
+        '<a class="btn btn-second" href="#/carte">' + u.ic('carte') + tr('Carte') + '</a>' +
         (c.spots.length > 1 ? '<button type="button" class="btn btn-doux" data-spots="distance" aria-pressed="' + !!pos + '">' + u.ic('position') + tr(pos ? /*tr*/'Triés par distance' : /*tr*/'Trier par distance') + '</button>' : '') +
         '</div>';
 
@@ -391,7 +401,8 @@
         contenu = '<div class="vide">' + u.ic('epingle', 'ic-vide ic-vide-spot') +
           '<h2>' + tr('Aucun spot pour l’instant') + '</h2>' +
           '<p>' + tr('Enregistre tes affûts et tes points d’observation : position GPS, meilleures heures, notes. Pratique pour y retourner photographier, et tu verras quelles espèces tu y as vues.') + '</p>' +
-          '<button type="button" class="btn btn-prim" data-spots="nouveau">' + u.ic('plus') + tr('Nouveau spot') + '</button></div>';
+          '<div class="vide-actions"><button type="button" class="btn btn-prim" data-spots="nouveau">' + u.ic('plus') + tr('Nouveau spot') + '</button>' +
+          '<a class="btn btn-second" href="#/carte">' + u.ic('carte') + tr('Carte') + '</a></div></div>';
       } else {
         contenu = '<ul class="liste-simple liste-spots">' + spots.map(function (s) {
           const st = stats.get(s.id);
@@ -405,11 +416,23 @@
         }).join('') + '</ul>';
       }
 
+      // Itinéraires préparés sur la carte
+      const blocItin = c.itineraires.length
+        ? '<section class="section"><h2>' + u.ic('chemin') + tr('Mes itinéraires') + ' <span class="compte">' + c.itineraires.length + '</span></h2>' +
+          '<ul class="liste-simple">' + c.itineraires.map(function (it) {
+            const pts = App.itineraires.points(it, c);
+            const infos = [u.pluriel(pts.length, 'étape'), tr(it.mode === 'voiture' ? /*tr*/'En voiture' : /*tr*/'À pied')];
+            if (pts.length > 1) infos.push(tr('{distance} à vol d’oiseau', { distance: texteDistance(App.itineraires.distance(pts)) }));
+            return '<li><a href="#/carte/itineraire/' + encodeURIComponent(it.id) + '"><div class="vignette vignette-spot">' + u.ic('chemin') + '</div>' +
+              '<span class="ls-txt"><b>' + u.esc(it.nom) + '</b><small>' + u.esc(infos.join(' · ')) + '</small></span></a></li>';
+          }).join('') + '</ul></section>'
+        : '';
+
       el.innerHTML = App.ui.entete({
         titre: tr('Mes spots'),
         sous: c.spots.length ? u.pluriel(c.spots.length, 'spot') : tr('Affûts et points d’observation'),
         retour: '#/observations'
-      }) + (c.spots.length ? barre : '') + contenu;
+      }) + (c.spots.length ? barre : '') + contenu + blocItin;
 
       el.querySelectorAll('[data-spots="nouveau"]').forEach(function (b) {
         b.addEventListener('click', function () { creerPuisOuvrir(positionRecente() || {}); });
@@ -487,12 +510,14 @@
           '<p class="spot-trajet" id="sp-trajet">' + (positionRecente() ? u.ic('position') + '<span>' + u.esc(texteTrajet(positionRecente(), spot)) + '</span>' : '') + '</p>' +
           '<div class="actions-fiche">' +
           '<button type="button" class="btn btn-doux" data-spot="trajet">' + u.ic('position') + tr('Distance depuis ma position') + '</button>' +
-          '<a class="btn btn-second" href="' + lienCarte(spot.lat, spot.lon) + '" target="_blank" rel="noopener">' + u.ic('carte') + tr('Voir la carte') + '</a>' +
+          '<a class="btn btn-second" href="#/carte/spot/' + encodeURIComponent(spot.id) + '">' + u.ic('carte') + tr('Voir sur la carte') + '</a>' +
           '<a class="btn btn-second" href="' + lienItineraire(spot.lat, spot.lon) + '" target="_blank" rel="noopener">' + u.ic('chemin') + tr('Itinéraire') + '</a>' +
           '</div>' +
-          '<p class="aide">' + tr('La distance marche sans réseau ; la carte et l’itinéraire demandent une connexion.') + '</p>' +
+          '<p class="aide">' + tr('La distance et la carte marchent sans réseau ; l’itinéraire s’ouvre dans Google Maps et demande une connexion.') + '</p>' +
           '</div>'
-        : '<div class="encart encart-verif">' + u.ic('alerte') + '<div>' + tr('Pas de position GPS pour ce spot. Touche « Modifier » sur place pour l’ajouter.') + '</div></div>';
+        : '<div class="encart encart-verif">' + u.ic('alerte') + '<div>' + tr('Pas de position GPS pour ce spot. Touche « Modifier » sur place pour l’ajouter, ou place-le sur la carte.') +
+          '<div class="actions-fiche" style="margin:10px 0 0"><a class="btn btn-second btn-petit" href="#/carte/placer/' + encodeURIComponent(spot.id) + '">' + u.ic('epingle') + tr('Placer sur la carte') + '</a></div>' +
+          '</div></div>';
 
       const blocHeures = (spot.heures || st.obs.length)
         ? '<section class="section"><h2>' + u.ic('horloge') + tr('Meilleures heures') + '</h2>' +
@@ -578,6 +603,9 @@
     const ici = trier(c.spots.filter(function (s) { const st = stats.get(s.id); return st && st.especes.has(e.id); }), null)
       .map(function (s) { return { spot: s, info: stats.get(s.id).especes.get(e.id) }; })
       .sort(function (a, b) { return b.info.nb - a.info.nb; });
+    // Quelque chose à montrer sur la carte : une observation avec GPS ou un spot placé
+    const avecPosition = c.obs.some(function (o) { return o.especeId === e.id && aUnePosition(o); }) ||
+      ici.some(function (x) { return aUnePosition(x.spot); });
     return '<div class="encart perchoirs" id="perchoirs">' + perchoirsHtml(texte) + '</div>' +
       '<h3 class="section-titre" style="font-size:18px;margin-top:22px">' + tr('Spots où tu l’as vu') +
       (ici.length ? ' <span class="compte">' + ici.length + '</span>' : '') + '</h3>' +
@@ -591,6 +619,7 @@
           ? /*tr*/'Aucune observation de cette espèce rattachée à un spot. Dans le formulaire d’observation, choisis un spot dans « Spot ».'
           : /*tr*/'Tu n’as pas encore de spot. Crée tes affûts et points d’observation, puis rattache-leur tes observations.') + '</p>') +
       '<div class="actions-fiche">' +
+      (avecPosition ? '<a class="btn btn-second" href="#/carte/espece/' + encodeURIComponent(e.id) + '">' + u.ic('carte') + tr('Voir sur la carte') + '</a>' : '') +
       '<a class="btn btn-second" href="#/spots">' + u.ic('epingle') + tr('Tous mes spots') + (c.spots.length ? ' <span class="compte-btn">' + c.spots.length + '</span>' : '') + '</a>' +
       '<button type="button" class="btn btn-doux" data-fiche-spot="nouveau">' + u.ic('plus') + tr('Nouveau spot') + '</button>' +
       '</div>';
@@ -688,6 +717,13 @@
     brancherFiche: brancherFiche,
     lireCoordonnees: lireCoordonnees,
     distance: distance,
+    texteDistance: texteDistance,
+    texteTrajet: texteTrajet,
+    coordonnees: coordonnees,
+    lienItineraire: lienItineraire,
+    localiser: localiser,
+    positionRecente: positionRecente,
+    noterPosition: noterPosition,
     preselection: null // spot à choisir dans le prochain formulaire d'observation (« Nouvelle observation ici »)
   };
 })(window.App);

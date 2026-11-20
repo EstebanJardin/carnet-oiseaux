@@ -12,8 +12,13 @@
    conservé d'une version à l'autre : elles ne sont téléchargées qu'une
    fois. Chaque adresse porte une empreinte (?v=…, dans data/photos.js) :
    une photo remplacée sera retéléchargée automatiquement.
+
+   La carte hors ligne (dossier carte/, environ 25 Mo) n'est PAS gérée
+   ici : la page Carte la télécharge à la demande dans son propre cache
+   (« carnet-carte-hors-ligne », liste des fichiers dans data/carte.js),
+   que ce service worker ne touche jamais.
    ===================================================================== */
-const VERSION = 'v1.4.0';
+const VERSION = 'v1.5.0';
 const CACHE = 'carnet-oiseaux-' + VERSION;
 const CACHE_PHOTOS = 'carnet-oiseaux-photos';
 
@@ -27,6 +32,7 @@ const FICHIERS = [
   './data/especes.js',
   './data/photos.js',
   './data/traductions.js',
+  './data/carte.js',
   './js/utils.js',
   './js/db.js',
   './js/photos.js',
@@ -42,6 +48,8 @@ const FICHIERS = [
   './js/cibles.js',
   './js/sortie.js',
   './js/spots.js',
+  './js/itineraires.js',
+  './js/carte.js',
   './js/sauvegarde.js',
   './js/app.js',
   './icons/icon-192.png',
@@ -116,7 +124,9 @@ self.addEventListener('fetch', function (ev) {
   const req = ev.request;
   if (req.method !== 'GET') return;
   const url = new URL(req.url);
-  if (url.origin !== self.location.origin) return; // liens externes (carte, crédits) : non gérés
+  if (url.origin !== self.location.origin) return; // liens externes (Google Maps, crédits) : non gérés
+  // Fichiers de la carte hors ligne : la page Carte les télécharge elle-même (toujours depuis le réseau)
+  if (url.pathname.indexOf('/carte/') !== -1) return;
 
   if (req.mode === 'navigate') {
     ev.respondWith(
